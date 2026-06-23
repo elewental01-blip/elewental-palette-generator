@@ -25,7 +25,7 @@ export function GroundEditor() {
     dispatch({ type: "UPDATE_GROUND", id: activeItem.id, ground: { ...activeItem, [field]: value } });
   };
 
-  const addItem    = () => updateField("items",   [...activeItem.items,   { id: 0, chance: 10 }]);
+  const addItem    = () => updateField("items", [...activeItem.items, { id: 0, chance: 10 }]);
   const removeItem = (i: number) => updateField("items", activeItem.items.filter((_, idx) => idx !== i));
   const updateItem = (i: number, field: string, value: number) => {
     const n = [...activeItem.items]; n[i] = { ...n[i], [field]: value }; updateField("items", n);
@@ -149,18 +149,27 @@ export function GroundEditor() {
           <div className="space-y-2">
             {activeItem.borders.map((border, idx) => (
               <Card key={idx} className="p-3">
-                <div className="flex items-center gap-4">
-                  <div className="space-y-1 w-32">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="space-y-1 w-28">
                     <Label className="text-xs">Align</Label>
                     <Select value={border.align} onValueChange={(val) => updateBorder(idx, "align", val)}>
                       <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="outer">Outer</SelectItem>
-                        <SelectItem value="inner">Inner</SelectItem>
+                        <SelectItem value="outer">outer</SelectItem>
+                        <SelectItem value="inner">inner</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1 flex-1">
+                  <div className="space-y-1 flex-1 min-w-[110px]">
+                    <Label className="text-xs">to <span className="text-muted-foreground">(optional)</span></Label>
+                    <Input
+                      placeholder="none, 235, brushname…"
+                      value={border.to ?? ""}
+                      onChange={(e) => updateBorder(idx, "to", e.target.value || undefined)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1 w-28">
                     <Label className="text-xs">ID</Label>
                     <Input type="number" value={border.id || ""} onChange={(e) => updateBorder(idx, "id", parseInt(e.target.value) || 0)} className="h-8 text-sm" />
                   </div>

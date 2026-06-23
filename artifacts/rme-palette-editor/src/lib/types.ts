@@ -5,7 +5,7 @@ export interface BorderItem {
   borderId?: number;
   group?: number;
   comment?: string;
-  items: Record<BorderDirection, number[]>;
+  items: Record<BorderDirection, number | null>;
 }
 
 export interface GroundItem {
@@ -14,7 +14,7 @@ export interface GroundItem {
   serverLookId?: number;
   zOrder?: number;
   items: { id: number; chance: number; }[];
-  borders: { align: "outer" | "inner"; id: number; }[];
+  borders: { align: "outer" | "inner"; id: number; to?: string; }[];
   friends: string[];
 }
 

@@ -13,16 +13,15 @@ export function generateBordersXml(borders: BorderItem[]): string {
     const hasContent =
       border.comment ||
       border.group !== undefined ||
-      Object.values(border.items).some((arr) => arr.length > 0);
+      Object.values(border.items).some((v) => v !== null);
     if (!hasContent) continue;
     const id = border.borderId ?? 0;
     xml += `<border id="${id}"${border.group ? ` group="${border.group}"` : ""}>${border.comment ? ` <!-- ${border.comment} -->` : ""}\n`;
     const directions = ["n", "w", "e", "s", "cnw", "cne", "cse", "csw", "dnw", "dne", "dse", "dsw"] as const;
     for (const dir of directions) {
-      if (border.items[dir]) {
-        for (const item of border.items[dir]) {
-          xml += `  <borderitem edge="${dir}" item="${item}"/>\n`;
-        }
+      const item = border.items[dir];
+      if (item !== null && item !== undefined) {
+        xml += `  <borderitem edge="${dir}" item="${item}"/>\n`;
       }
     }
     xml += `</border>\n`;
@@ -40,10 +39,15 @@ export function generateGroundsXml(grounds: GroundItem[]): string {
     xml += `<brush ${attrs}>\n`;
     for (const item of ground.items)
       xml += `  <item id="${item.id}" chance="${item.chance}"/>\n`;
-    for (const border of ground.borders)
-      xml += `  <border align="${border.align}" id="${border.id}"/>\n`;
-    for (const friend of ground.friends)
-      xml += `  <friend name="${friend}"/>\n`;
+    for (const border of ground.borders) {
+      let bAttrs = `align="${border.align}"`;
+      if (border.to !== undefined && border.to !== "") bAttrs += ` to="${border.to}"`;
+      bAttrs += ` id="${border.id}"`;
+      xml += `  <border ${bAttrs}/>\n`;
+    }
+    for (const friend of ground.friends) {
+      if (friend && friend.trim()) xml += `  <friend name="${friend.trim()}"/>\n`;
+    }
     xml += `</brush>\n`;
   }
   return xml.trimEnd();

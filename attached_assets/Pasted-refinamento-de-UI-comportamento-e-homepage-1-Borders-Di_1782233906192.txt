@@ -1,0 +1,241 @@
+refinamento de UI, comportamento e homepage
+
+
+
+1. Borders → Direction Grid (controle de IDs por direção)
+
+
+
+- Cada direção deve aceitar somente 1 ID ativo.
+
+
+
+- Comportamento de interação:
+
+  - Se já existir um ID preenchido:
+
+    - 2 cliques no campo abrem modo de edição detalhado (input expandido/focado).
+
+  - Manter o botão “X” para remoção manual do ID.
+
+
+
+- Garantir que não existam múltiplos IDs por direção em nenhuma condição.
+
+
+
+- Remover totalmente a indicação de contagem (ex: “1x”, “2x”) ao lado das direções.
+
+
+
+---
+
+
+
+2. UI geral → remoção de controles incrementais
+
+
+
+- Remover botões de incremento/decremento (up/down) de todos os campos de ID.
+
+
+
+- Aplicação global:
+
+  - Borders
+
+  - Grounds
+
+  - Walls
+
+  - Doodads
+
+  - Qualquer outro módulo existente ou futuro
+
+
+
+- Objetivo: interface mais limpa e com foco em input manual direto.
+
+
+
+---
+
+
+
+3. Página inicial (Home) — redesign como landing page
+
+
+
+- Definir Home como tela padrão de abertura do sistema.
+
+
+
+- Home NÃO deve ser funcional dentro do fluxo principal do editor (apenas apresentação).
+
+
+
+Estrutura da Home:
+
+
+
+- Layout minimalista e visualmente refinado (clean UI).
+
+
+
+- Header com identidade visual:
+
+  - Ícone do app grande em destaque na home page, com efeito visual e animação leve e moderna (CSS).
+
+  - Sugestão de microinterações no ícone: leve rotação, quebra em partes e recomposição rápida, estilo abstrato coerente com ferramenta de edição. (respeitar geometria do ícone baseado em um  Dodecágono/Dodecagrama.)
+
+  - Manter o design e a paleta de cores atual do ícone.
+
+  - Enquanto o usuário estiver na home page, o ícone e o nome do programa do topo (menu), que aparecem em todos os menus, devem ter comportamento diferente apenas na home page e não devem aparecer no menu. Em vez disso, devem aparecer como título da home page.
+
+
+
+- Conteúdo principal:
+
+  - Logo e título com design e efeitos descritos acima.
+
+  - Área de blog/landing page abaixo:
+
+    - Título
+
+    - Subtítulo
+
+    - Conteúdo em texto estruturado
+
+  - O conteúdo deve ser carregado via arquivos locais/configuração simples (editável manualmente, pode ser html).
+
+  - Iniciar com placeholder fornecido pelo sistema (Replit default ou fallback text).
+
+
+
+- Sidebar esquerda:
+
+  - Menu de posts/categorias do blog
+
+  - Navegação simples entre conteúdos da home (não relacionado ao editor principal)
+
+  - Deve ser possível minimizar
+
+  - Deve ser possível criar nova página de blog (gerando um arquivo de edição manual, pode ser html), e trocar a ordem dos posts, ao trocar a ordem deles no menu, a ordem é trocada na home page; mas Logo e título ficam sempre fixos no topo.
+
+
+
+---
+
+
+
+4. Ordem dos menus e navegação principal
+
+
+
+- Estrutura obrigatória de navegação:
+
+  home → tilesets → grounds → borders → doodads → walls
+
+
+
+---
+
+
+
+5. Grounds → Add Border (nova opção “to”)
+
+
+
+- Manter opções existentes:
+
+  - outer
+
+  - inner
+
+
+
+- Adicionar nova opção:
+
+  - to
+
+
+
+Comportamento da opção “to”:
+
+- Permite associação direta entre border e referência externa.
+
+- Aceita valores:
+
+  - numéricos (ex: 235)
+
+  - texto (ex: brushname)
+
+  - “none” (opcional/default)
+
+- Campo opcional (não obrigatório para criação de border).
+
+
+
+Formato XML esperado:
+
+- <border align="outer" to="none" id="235"/>
+
+- <border align="inner" to="brushname" id="120"/>
+
+
+
+---
+
+
+
+6. Grounds → validação de “friends”
+
+
+
+- Ao gerar XML:
+
+  - Ignorar completamente entradas de “friends” sem nome ou sem ID.
+
+  - Apenas entries válidas devem ser exportadas.
+
+  - Não gerar tags vazias ou placeholders no XML final.
+
+
+
+---
+
+
+
+7. Identidade visual do sistema (EPE)
+
+
+
+- Título principal do app:
+
+  - padrão reduzido: “EPE”
+
+
+
+- Interação:
+
+  - Hover no título ou ícone:
+
+    - Expande para “Elewental Palette Editor”
+
+    - Animação leve e moderna (CSS)
+
+    - Sugestão de microinterações no ícone:
+
+      - leve rotação, quebra em partes e recomposição rápida, respeitar geometria Dodecágono/Dodecagrama.
+
+      - estilo abstrato coerente com ferramenta de edição
+
+
+
+- Novo ícone no lugar de “dark mode”, contendo:
+
+  - botão para ativar/desativar dark mode
+
+  - botão para ativar/desativar efeitos do app (como os efeitos do ícone do editor)
+
+- O botão de dark mode passa a ser apenas uma subcategoria dentro do menu de “estilos”.

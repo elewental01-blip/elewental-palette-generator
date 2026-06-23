@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, ReactNode } from "react";
 import { BorderItem, GroundItem, DoodadItem, CarpetItem, WallItem, TilesetItem } from "./types";
 
-export type Category = "borders" | "grounds" | "doodads" | "walls" | "tilesets";
+export type Category = "home" | "tilesets" | "grounds" | "borders" | "doodads" | "walls";
 
 type State = {
   borders: BorderItem[];
@@ -37,6 +37,12 @@ type Action =
   | { type: "DELETE_TILESET"; id: string }
   | { type: "CLEAR_CATEGORY"; category: Category };
 
+const EMPTY_BORDER_ITEMS: BorderItem["items"] = {
+  n: null, s: null, e: null, w: null,
+  cnw: null, cne: null, csw: null, cse: null,
+  dnw: null, dne: null, dsw: null, dse: null,
+};
+
 const initialState: State = {
   borders:  [],
   grounds:  [],
@@ -44,7 +50,7 @@ const initialState: State = {
   carpets:  [],
   walls:    [],
   tilesets: [],
-  activeCategory: "borders",
+  activeCategory: "home",
   activeItemId: null,
 };
 
@@ -108,12 +114,13 @@ function reducer(state: State, action: Action): State {
 const EditorContext = createContext<{
   state: State;
   dispatch: React.Dispatch<Action>;
+  emptyBorderItems: BorderItem["items"];
 } | null>(null);
 
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   return (
-    <EditorContext.Provider value={{ state, dispatch }}>
+    <EditorContext.Provider value={{ state, dispatch, emptyBorderItems: EMPTY_BORDER_ITEMS }}>
       {children}
     </EditorContext.Provider>
   );
