@@ -42,8 +42,13 @@ export function WallEditor() {
     updateField("walls", { ...activeItem.walls, [type]: { ...current, ...data } });
   };
 
+  const blockNonNumeric = (e: React.KeyboardEvent) => {
+    if (!/[\d]/.test(e.key) && !["Backspace","Delete","ArrowLeft","ArrowRight","Tab"].includes(e.key)) e.preventDefault();
+  };
+
   const renderWallTab = (type: "horizontal" | "vertical" | "corner" | "pole") => {
     const wallData = activeItem.walls[type] || { items: [], doors: [] };
+    const hasDoors = type === "horizontal" || type === "vertical";
 
     return (
       <div className="space-y-6 pt-4">
@@ -57,16 +62,20 @@ export function WallEditor() {
           <div className="space-y-2">
             {wallData.items.map((item, idx) => (
               <div key={idx} className="flex items-center gap-2">
-                <Input type="number" placeholder="Item ID" value={item.id || ""} onChange={(e) => {
-                  const newItems = [...wallData.items];
-                  newItems[idx] = { ...item, id: parseInt(e.target.value) || 0 };
-                  updateWallTypeItem(type, { items: newItems });
-                }} className="h-8" />
-                <Input type="number" placeholder="Chance" value={item.chance || ""} onChange={(e) => {
-                  const newItems = [...wallData.items];
-                  newItems[idx] = { ...item, chance: parseInt(e.target.value) || 0 };
-                  updateWallTypeItem(type, { items: newItems });
-                }} className="h-8" />
+                <Input type="text" inputMode="numeric" placeholder="Item ID"
+                  value={item.id || ""} onKeyDown={blockNonNumeric}
+                  onChange={(e) => {
+                    const newItems = [...wallData.items];
+                    newItems[idx] = { ...item, id: parseInt(e.target.value) || 0 };
+                    updateWallTypeItem(type, { items: newItems });
+                  }} className="h-8" />
+                <Input type="text" inputMode="numeric" placeholder="Chance"
+                  value={item.chance || ""} onKeyDown={blockNonNumeric}
+                  onChange={(e) => {
+                    const newItems = [...wallData.items];
+                    newItems[idx] = { ...item, chance: parseInt(e.target.value) || 0 };
+                    updateWallTypeItem(type, { items: newItems });
+                  }} className="h-8" />
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => {
                   updateWallTypeItem(type, { items: wallData.items.filter((_, i) => i !== idx) });
                 }}><Trash2 className="h-4 w-4" /></Button>
@@ -76,72 +85,76 @@ export function WallEditor() {
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="font-bold" data-help="Doors — portas embutidas neste segmento de muro. Cada porta tem ID, tipo e estado (aberta/fechada)">Doors</Label>
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
-              updateWallTypeItem(type, { doors: [...wallData.doors, { id: 0, type: "normal" }] });
-            }} data-help="Add Door — adiciona uma porta a este segmento de muro (normal, trancada, quest, etc.)">+ Add Door</Button>
-          </div>
-          <div className="space-y-2">
-            {wallData.doors.map((door, idx) => (
-              <Card key={idx} className="p-2">
-                <div className="flex flex-wrap gap-2 items-end">
-                  <div className="space-y-1 flex-1 min-w-[100px]">
-                    <Label className="text-[10px]">ID</Label>
-                    <Input type="number" value={door.id || ""} onChange={(e) => {
-                      const newDoors = [...wallData.doors];
-                      newDoors[idx] = { ...door, id: parseInt(e.target.value) || 0 };
-                      updateWallTypeItem(type, { doors: newDoors });
-                    }} className="h-8 text-sm" />
-                  </div>
-                  <div className="space-y-1 flex-1 min-w-[120px]">
-                    <Label className="text-[10px]">Type</Label>
-                    <Select value={door.type} onValueChange={(val: any) => {
-                      const newDoors = [...wallData.doors];
-                      newDoors[idx] = { ...door, type: val };
-                      updateWallTypeItem(type, { doors: newDoors });
-                    }}>
-                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="locked">Locked</SelectItem>
-                        <SelectItem value="quest">Quest</SelectItem>
-                        <SelectItem value="magic">Magic</SelectItem>
-                        <SelectItem value="archway">Archway</SelectItem>
-                        <SelectItem value="normal_alt">Normal Alt</SelectItem>
-                        <SelectItem value="hatch_window">Hatch Window</SelectItem>
-                        <SelectItem value="window">Window</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-4 px-2 py-1 bg-muted/50 rounded-md">
-                    <div className="flex items-center gap-1.5">
-                      <Checkbox checked={door.open || false} onCheckedChange={(c) => {
-                        const newDoors = [...wallData.doors];
-                        newDoors[idx] = { ...door, open: !!c };
-                        updateWallTypeItem(type, { doors: newDoors });
-                      }} />
-                      <Label className="text-[10px] font-normal">Open</Label>
+        {hasDoors && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="font-bold" data-help="Doors — portas embutidas neste segmento de muro. Cada porta tem ID, tipo e estado (aberta/fechada)">Doors</Label>
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
+                updateWallTypeItem(type, { doors: [...wallData.doors, { id: 0, type: "normal" }] });
+              }} data-help="Add Door — adiciona uma porta a este segmento de muro (normal, trancada, quest, etc.)">+ Add Door</Button>
+            </div>
+            <div className="space-y-2">
+              {wallData.doors.map((door, idx) => (
+                <Card key={idx} className="p-2">
+                  <div className="flex flex-wrap gap-2 items-end">
+                    <div className="space-y-1 flex-1 min-w-[100px]">
+                      <Label className="text-[10px]">ID</Label>
+                      <Input type="text" inputMode="numeric" value={door.id || ""}
+                        onKeyDown={blockNonNumeric}
+                        onChange={(e) => {
+                          const newDoors = [...wallData.doors];
+                          newDoors[idx] = { ...door, id: parseInt(e.target.value) || 0 };
+                          updateWallTypeItem(type, { doors: newDoors });
+                        }} className="h-8 text-sm" />
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Checkbox checked={door.locked || false} onCheckedChange={(c) => {
+                    <div className="space-y-1 flex-1 min-w-[120px]">
+                      <Label className="text-[10px]">Type</Label>
+                      <Select value={door.type} onValueChange={(val: any) => {
                         const newDoors = [...wallData.doors];
-                        newDoors[idx] = { ...door, locked: !!c };
+                        newDoors[idx] = { ...door, type: val };
                         updateWallTypeItem(type, { doors: newDoors });
-                      }} />
-                      <Label className="text-[10px] font-normal">Locked</Label>
+                      }}>
+                        <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="locked">Locked</SelectItem>
+                          <SelectItem value="quest">Quest</SelectItem>
+                          <SelectItem value="magic">Magic</SelectItem>
+                          <SelectItem value="archway">Archway</SelectItem>
+                          <SelectItem value="normal_alt">Normal Alt</SelectItem>
+                          <SelectItem value="hatch_window">Hatch Window</SelectItem>
+                          <SelectItem value="window">Window</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
+                    <div className="flex items-center gap-4 px-2 py-1 bg-muted/50 rounded-md">
+                      <div className="flex items-center gap-1.5">
+                        <Checkbox checked={door.open || false} onCheckedChange={(c) => {
+                          const newDoors = [...wallData.doors];
+                          newDoors[idx] = { ...door, open: !!c };
+                          updateWallTypeItem(type, { doors: newDoors });
+                        }} />
+                        <Label className="text-[10px] font-normal">Open</Label>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Checkbox checked={door.locked || false} onCheckedChange={(c) => {
+                          const newDoors = [...wallData.doors];
+                          newDoors[idx] = { ...door, locked: !!c };
+                          updateWallTypeItem(type, { doors: newDoors });
+                        }} />
+                        <Label className="text-[10px] font-normal">Locked</Label>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={() => {
+                      updateWallTypeItem(type, { doors: wallData.doors.filter((_, i) => i !== idx) });
+                    }}><Trash2 className="h-4 w-4" /></Button>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={() => {
-                    updateWallTypeItem(type, { doors: wallData.doors.filter((_, i) => i !== idx) });
-                  }}><Trash2 className="h-4 w-4" /></Button>
-                </div>
-              </Card>
-            ))}
-            {wallData.doors.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No doors.</p>}
+                </Card>
+              ))}
+              {wallData.doors.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No doors.</p>}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   };
@@ -172,9 +185,11 @@ export function WallEditor() {
             <Label htmlFor="wall-lookid">Server LookID</Label>
             <Input
               id="wall-lookid"
-              type="number"
-              value={activeItem.serverLookId || ""}
-              onChange={(e) => updateField("serverLookId", parseInt(e.target.value) || undefined)}
+              type="text"
+              inputMode="numeric"
+              value={activeItem.serverLookId ?? 0}
+              onKeyDown={(e) => { if (!/[\d]/.test(e.key) && !["Backspace","Delete","ArrowLeft","ArrowRight","Tab"].includes(e.key)) e.preventDefault(); }}
+              onChange={(e) => updateField("serverLookId", parseInt(e.target.value) || 0)}
             />
           </div>
           <div className="space-y-2" data-help="Thickness — espessura do muro no formato numerador/denominador (ex: 100/100)">
@@ -187,7 +202,7 @@ export function WallEditor() {
             />
           </div>
           <div className="flex items-center space-x-2" data-help="Draggable — quando ativado, o muro pode ser arrastado no mapa pelo jogador">
-            <Checkbox id="wall-draggable" checked={activeItem.draggable ?? true} onCheckedChange={(c) => updateField("draggable", !!c)} />
+            <Checkbox id="wall-draggable" checked={activeItem.draggable ?? false} onCheckedChange={(c) => updateField("draggable", !!c)} />
             <Label htmlFor="wall-draggable" className="font-normal cursor-pointer">Draggable</Label>
           </div>
           <div className="flex items-center space-x-2" data-help="On Blocking — quando ativado, o muro bloqueia passagem mesmo sobre tiles blocantes">

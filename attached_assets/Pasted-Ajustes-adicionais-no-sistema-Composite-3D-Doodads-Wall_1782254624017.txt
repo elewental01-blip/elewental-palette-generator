@@ -1,0 +1,375 @@
+Ajustes adicionais no sistema — Composite 3D, Doodads, Walls, Help Mode e Display Settings
+
+
+
+1. Composite 3D → limite de camadas visíveis
+
+
+
+- Alterar a quantidade de camadas exibidas.
+
+
+
+- Apenas alteração de quantidade e renomear:
+
+
+
+  - Camada central (referência): Z = 0 (Base)
+
+  - Acima:
+
+    - Z -1
+
+    - Z -2
+
+    - Z -3
+
+    - Z -4
+
+  - Abaixo:
+
+    - Z +1
+
+    - Z +2
+
+    - Z +3
+
+    - Z +4
+
+- Em Z layer: é usado (-) subir e (+) descer, em vez de (-) e (+), use alt symbols que representem subir/descer.
+
+
+
+- Remover completamente a exibição de:
+
+  - Z -5 até Z -7
+
+  - Z +5 até Z +7
+
+
+
+- Objetivo:
+
+  - Manter apenas profundidade visual essencial.
+
+
+
+---
+
+
+
+2. Doodads → Carpet Direction Grid (validação de input)
+
+
+
+- Nos campos de direction grid:
+
+
+
+  - NÃO permitir digitação de texto.
+
+
+
+- Permitir apenas:
+
+  - números
+
+
+
+- Bloquear:
+
+  - letras
+
+  - símbolos
+
+  - caracteres especiais
+
+
+
+- A validação deve ocorrer durante a digitação (input-level), não apenas no output.
+
+
+
+---
+
+
+
+3. Walls → default server lookid e comportamento de configuração
+
+
+
+3.1 Server lookid default
+
+
+
+- Ao criar uma nova wall configuration:
+
+  - se “server lookid” não for preenchido:
+
+    - deve assumir valor 0 no campo de input e no XML output
+
+
+
+---
+
+
+
+3.2 Draggable default state
+
+
+
+- Atualmente:
+
+  - draggable vem selecionado por padrão, mas não aparece corretamente no XML até ser alterado.
+
+
+
+- Correção:
+
+  - draggable deve iniciar DESATIVADO por padrão
+
+  - não deve gerar inconsistência no XML output
+
+  - somente deve aparecer no XML quando o usuário ativar explicitamente
+
+
+
+---
+
+
+
+3.3 Bloqueio de input não numérico
+
+
+
+- Em Walls:
+
+  - todos os campos de ID devem aceitar apenas números
+
+
+
+- Bloquear:
+
+  - texto
+
+  - caracteres especiais
+
+  - espaços
+
+
+
+- A validação deve ser aplicada em tempo real (input-level)
+
+
+
+---
+
+
+
+4. Walls → restrição de categorias
+
+
+
+- Nas categorias:
+
+  - corners
+
+  - pole
+
+
+
+- NÃO deve existir opção de adicionar doors
+
+
+
+- Remover completamente:
+
+  - UI de doors
+
+  - lógica de criação de doors nessas categorias
+
+
+
+- Objetivo:
+
+  - evitar configuração inválida dentro dessas categorias estruturais
+
+
+
+---
+
+
+
+5. Help Mode → comportamento de tooltip
+
+
+
+5.1 Ajuste de posicionamento
+
+
+
+- Problema atual:
+
+  - tooltips estão ultrapassando os limites da tela em bordas horizontais e verticais
+
+
+
+- Correção:
+
+  - detectar proximidade da borda da tela
+
+  - inverter automaticamente a direção do tooltip
+
+  - garantir que o texto sempre permaneça visível dentro da viewport
+
+
+
+---
+
+
+
+5.2 Suporte a idiomas no Help Mode
+
+
+
+- Adicionar sistema de seleção de idioma para tooltips.
+
+
+
+- Idiomas suportados:
+
+  - inglês (default)
+
+  - português
+
+  - polonês
+
+  - espanhol
+
+
+
+- Implementação:
+
+  - adicionar seletor em formato markdown/config simples dentro do Help Mode
+
+  - todos os textos de ajuda devem respeitar o idioma selecionado
+
+
+
+- Default:
+
+  - inglês
+
+
+
+---
+
+
+
+6. Display Settings → sistema de cores global
+
+
+
+6.1 Novo menu de cores
+
+
+
+- Adicionar abaixo de “Effects” um novo menu:
+
+  - Color Theme Selector
+
+
+
+- Função:
+
+  - alterar a cor principal do sistema (atualmente amarelo)
+
+
+
+- Cores disponíveis:
+
+
+
+  - cinza claro
+
+  - preto
+
+  - azul claro
+
+  - azul escuro
+
+  - ciano claro
+
+  - ciano escuro
+
+  - roxo claro
+
+  - roxo escuro
+
+  - vermelho claro
+
+  - vermelho escuro
+
+  - bordô claro
+
+  - bordô escuro
+
+  - laranja claro
+
+  - laranja escuro
+
+  - amarelo claro (padrão inicial, atualmente utilizado)
+
+  - amarelo escuro (dourado suave, não marrom)
+
+  - verde claro
+
+  - verde escuro
+
+  - rosa claro
+
+  - rosa escuro
+
+
+
+- O amarelo atual deve permanecer como padrão inicial.
+
+
+
+---
+
+
+
+6.2 Dark Mode → adaptação dinâmica de paleta
+
+
+
+- O dark mode atual possui base escura azulada. Deixe-a sem saturação, mantendo o padrão de luminosidade. Por padrão.
+
+
+
+- Novo comportamento:
+
+
+
+  - Quando o usuário altera a cor principal:
+
+    - o dark mode deve adaptar automaticamente a paleta escura correspondente
+
+
+
+- Regras:
+
+  - manter mesma intensidade de luminosidade do dark mode atual
+
+  - manter mesma saturação visual geral
+
+  - ajustar apenas matiz (hue) para combinar com a cor selecionada
+
+
+
+- Objetivo:
+
+  - manter consistência visual em todos os temas
+
+  - evitar contraste quebrado entre dark mode e cor principal

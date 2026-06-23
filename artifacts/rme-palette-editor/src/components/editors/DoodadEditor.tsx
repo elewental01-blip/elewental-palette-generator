@@ -186,8 +186,8 @@ function CompositeTileGrid({ tiles, onChange }: { tiles: { x: number; y: number;
 
 // ── Composite 3D grid (X/Y/Z with perspective stacking) ──────────────────────
 
-const Z3D_MIN = -7;
-const Z3D_MAX = 7;
+const Z3D_MIN = -4;
+const Z3D_MAX = 4;
 const Z3D_STEP_X = 22;
 const Z3D_STEP_Y = 14;
 
@@ -368,12 +368,14 @@ function Composite3DGrid({ tiles, onChange }: {
           data-help="Z layer — altitude ativa para edição. Z− = andares acima (noroeste), Z+ = andares abaixo (sudeste)">Z layer:</span>
         <button type="button" onClick={() => setActiveZ((z) => Math.max(Z3D_MIN, z - 1))} disabled={activeZ === Z3D_MIN}
           className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors"
-          data-help="Subir — muda para o andar acima (Z negativo, deslocado para noroeste na perspectiva)">−</button>
+          title="Go up (Z−)"
+          data-help="Subir — muda para o andar acima (Z negativo, deslocado para noroeste na perspectiva)">↑</button>
         <span className="font-mono text-xs min-w-[3.5rem] text-center bg-muted/40 border border-orange-500/30 rounded px-2 py-0.5 leading-5 text-orange-400"
           data-help="Camada Z ativa — camada sendo editada. Tiles adicionados vão para esta altitude">{zLabel(activeZ)}</span>
         <button type="button" onClick={() => setActiveZ((z) => Math.min(Z3D_MAX, z + 1))} disabled={activeZ === Z3D_MAX}
           className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors"
-          data-help="Descer — muda para o andar abaixo (Z positivo, deslocado para sudeste na perspectiva)">+</button>
+          title="Go down (Z+)"
+          data-help="Descer — muda para o andar abaixo (Z positivo, deslocado para sudeste na perspectiva)">↓</button>
         <span className="text-[11px] text-muted-foreground">{tilesOnZ(activeZ).length} tile{tilesOnZ(activeZ).length !== 1 ? "s" : ""}</span>
       </div>
       {occupiedZ.length > 0 && (

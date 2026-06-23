@@ -154,9 +154,11 @@ function CarpetCell({
           {(data as { type: "multi"; items: { id: number; chance: number }[] }).items.map((item, idx) => (
             <div key={idx} className="flex gap-1 items-center">
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 placeholder="ID"
                 value={item.id || ""}
+                onKeyDown={(e) => { if (!/[\d\b]/.test(e.key) && !["Backspace","Delete","ArrowLeft","ArrowRight","Tab"].includes(e.key)) e.preventDefault(); }}
                 onChange={(e) => {
                   const items = [...(data as any).items];
                   items[idx] = { ...item, id: parseInt(e.target.value) || 0 };
@@ -165,9 +167,11 @@ function CarpetCell({
                 className="h-5 text-[10px] px-1 w-16 min-w-0"
               />
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 placeholder="%"
                 value={item.chance || ""}
+                onKeyDown={(e) => { if (!/[\d\b]/.test(e.key) && !["Backspace","Delete","ArrowLeft","ArrowRight","Tab"].includes(e.key)) e.preventDefault(); }}
                 onChange={(e) => {
                   const items = [...(data as any).items];
                   items[idx] = { ...item, chance: parseInt(e.target.value) || 0 };
@@ -221,9 +225,11 @@ function CarpetCell({
         <div className="px-2 py-2">
           <Input
             ref={inputRef}
-            type="number"
+            type="text"
+            inputMode="numeric"
             placeholder="Item ID"
             value={inputVal}
+            onKeyDown={(e) => { if (!/[\d\b]/.test(e.key) && !["Backspace","Delete","ArrowLeft","ArrowRight","Tab"].includes(e.key)) e.preventDefault(); }}
             onChange={(e) => setInputVal(e.target.value)}
             onFocus={() => setEditing(true)}
             onBlur={commitSingle}

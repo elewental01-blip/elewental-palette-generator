@@ -73,6 +73,82 @@ function savePosts(posts: BlogPost[]) {
   try { localStorage.setItem("epe-blog-posts", JSON.stringify(posts)); } catch {}
 }
 
+// ── Color themes ──────────────────────────────────────────────────────────────
+
+const COLOR_THEMES = [
+  { id: "yellow-light",   label: "Yellow Light",    p: "43 96% 58%",  fg: "0 0% 7%",   hue: 43,  sat: 0  },
+  { id: "yellow-dark",    label: "Yellow Dark",     p: "40 88% 46%",  fg: "0 0% 97%",  hue: 40,  sat: 0  },
+  { id: "orange-light",   label: "Orange Light",    p: "24 90% 62%",  fg: "0 0% 7%",   hue: 24,  sat: 8  },
+  { id: "orange-dark",    label: "Orange Dark",     p: "24 80% 44%",  fg: "0 0% 97%",  hue: 24,  sat: 8  },
+  { id: "red-light",      label: "Red Light",       p: "4 85% 62%",   fg: "0 0% 7%",   hue: 4,   sat: 8  },
+  { id: "red-dark",       label: "Red Dark",        p: "4 75% 40%",   fg: "0 0% 97%",  hue: 4,   sat: 8  },
+  { id: "burgundy-light", label: "Burgundy Light",  p: "345 60% 52%", fg: "0 0% 97%",  hue: 345, sat: 8  },
+  { id: "burgundy-dark",  label: "Burgundy Dark",   p: "345 58% 35%", fg: "0 0% 97%",  hue: 345, sat: 8  },
+  { id: "pink-light",     label: "Pink Light",      p: "320 70% 68%", fg: "0 0% 7%",   hue: 320, sat: 8  },
+  { id: "pink-dark",      label: "Pink Dark",       p: "320 65% 48%", fg: "0 0% 97%",  hue: 320, sat: 8  },
+  { id: "purple-light",   label: "Purple Light",    p: "270 70% 68%", fg: "0 0% 7%",   hue: 270, sat: 8  },
+  { id: "purple-dark",    label: "Purple Dark",     p: "270 65% 46%", fg: "0 0% 97%",  hue: 270, sat: 8  },
+  { id: "blue-light",     label: "Blue Light",      p: "210 90% 62%", fg: "0 0% 7%",   hue: 210, sat: 10 },
+  { id: "blue-dark",      label: "Blue Dark",       p: "220 75% 44%", fg: "0 0% 97%",  hue: 220, sat: 10 },
+  { id: "cyan-light",     label: "Cyan Light",      p: "185 80% 55%", fg: "0 0% 7%",   hue: 185, sat: 8  },
+  { id: "cyan-dark",      label: "Cyan Dark",       p: "185 75% 36%", fg: "0 0% 97%",  hue: 185, sat: 8  },
+  { id: "green-light",    label: "Green Light",     p: "142 65% 52%", fg: "0 0% 7%",   hue: 142, sat: 8  },
+  { id: "green-dark",     label: "Green Dark",      p: "142 60% 34%", fg: "0 0% 97%",  hue: 142, sat: 8  },
+  { id: "gray-light",     label: "Gray Light",      p: "0 0% 62%",    fg: "0 0% 7%",   hue: 0,   sat: 0  },
+  { id: "black",          label: "Black",           p: "0 0% 18%",    fg: "0 0% 97%",  hue: 0,   sat: 0  },
+] as const;
+
+type HelpLang = "en" | "pt" | "pl" | "es";
+
+const HELP_EN: Record<string, string> = {
+  "Logo EPE — clique para voltar à página inicial do Elewental Palette Editor": "EPE Logo — click to return to Elewental Palette Editor home",
+  "Home — página inicial do EPE com informações e novidades": "Home — EPE home page with news and information",
+  "Tilesets — agrupe brushes e itens em paletas para o RME": "Tilesets — group brushes and items into RME palettes",
+  "Grounds — edite terrain brushes com items, borders e friends": "Grounds — edit terrain brushes with items, borders, and friends",
+  "Borders — configure as 12 direções de borda de cada terrain": "Borders — configure the 12 border directions for each terrain",
+  "Doodads / Carpets — edite doodad brushes (Simple, Composite, 3D) e tapetes": "Doodads / Carpets — edit doodad brushes (Simple, Composite, 3D) and carpets",
+  "Walls — configure muros com tipos horizontal, vertical, corner e pole": "Walls — configure walls with horizontal, vertical, corner, and pole types",
+  "Modo Ajuda — quando ativo, passe o mouse sobre qualquer elemento da interface para ver sua descrição": "Help Mode — when active, hover over any UI element to see its description",
+  "Novo Doodad — cria um doodad brush vazio na lista": "New Doodad — creates an empty doodad brush in the list",
+  "Recolher Sidebar — colapsa o painel lateral para ganhar mais espaço no editor": "Collapse Sidebar — collapses the side panel to free up editor space",
+  "Novo Carpet — cria um carpet brush vazio para configurar tiles de tapete": "New Carpet — creates an empty carpet brush to configure carpet tiles",
+  "Novo Item — cria um novo brush/item vazio na categoria ativa": "New Item — creates a new empty brush/item in the active category",
+  "Expandir Sidebar — abre o painel lateral com a lista de brushes da categoria ativa": "Expand Sidebar — opens the side panel with the brush list for the active category",
+  "Items — tiles que compõem este tipo de muro. Cada item tem ID e chance de aparecimento": "Items — tiles that make up this wall type. Each item has an ID and appearance chance",
+  "Add Item — adiciona um tile para este tipo de muro com ID e chance": "Add Item — adds a tile for this wall type with an ID and chance value",
+  "Doors — portas embutidas neste segmento de muro. Cada porta tem ID, tipo e estado (aberta/fechada)": "Doors — doors embedded in this wall segment. Each door has an ID, type, and state (open/closed)",
+  "Add Door — adiciona uma porta a este segmento de muro (normal, trancada, quest, etc.)": "Add Door — adds a door to this wall segment (normal, locked, quest, etc.)",
+  "Brush Name — nome do wall brush. Deve ser único e é usado para referenciar este muro no XML": "Brush Name — name of the wall brush. Must be unique and is used to reference this wall in XML",
+  "Server LookID — ID do item para identificação visual do muro pelo servidor": "Server LookID — item ID for the server's visual identification of this wall",
+  "Thickness — espessura do muro no formato numerador/denominador (ex: 100/100)": "Thickness — wall thickness in numerator/denominator format (e.g. 100/100)",
+  "Draggable — quando ativado, o muro pode ser arrastado no mapa pelo jogador": "Draggable — when enabled, the wall can be dragged on the map by the player",
+  "On Blocking — quando ativado, o muro bloqueia passagem mesmo sobre tiles blocantes": "On Blocking — when enabled, the wall blocks passage even over blocking tiles",
+  "Wall Types — configure os tiles para cada orientação do muro: Horizontal, Vertical, Corner (canto) e Pole (pilar)": "Wall Types — configure tiles for each wall orientation: Horizontal, Vertical, Corner, and Pole",
+  "Horizontal — tiles do muro em orientação horizontal (lado a lado na direção leste-oeste)": "Horizontal — wall tiles in horizontal orientation (side by side, east-west direction)",
+  "Vertical — tiles do muro em orientação vertical (empilhados na direção norte-sul)": "Vertical — wall tiles in vertical orientation (stacked, north-south direction)",
+  "Corner — tile de canto onde muros horizontal e vertical se encontram": "Corner — corner tile where horizontal and vertical walls meet",
+  "Pole — tile de pilar, segmento de muro isolado sem conexões adjacentes": "Pole — pillar tile, isolated wall segment with no adjacent connections",
+  "Z layer — altitude ativa para edição. Z− = andares acima (noroeste), Z+ = andares abaixo (sudeste)": "Z layer — active altitude for editing. Z− = floors above (northwest), Z+ = floors below (southeast)",
+  "Subir — muda para o andar acima (Z negativo, deslocado para noroeste na perspectiva)": "Go Up — moves to the floor above (negative Z, shifted northwest in perspective view)",
+  "Camada Z ativa — camada sendo editada. Tiles adicionados vão para esta altitude": "Active Z Layer — currently edited layer. Tiles added will go to this altitude",
+  "Descer — muda para o andar abaixo (Z positivo, deslocado para sudeste na perspectiva)": "Go Down — moves to the floor below (positive Z, shifted southeast in perspective view)",
+  "Layers — camadas Z que possuem tiles. Clique em qualquer camada para navegar diretamente até ela": "Layers — Z layers that contain tiles. Click any layer to navigate directly to it",
+  "Expand — abre o Tile Layout 3D em modo tela cheia para editar múltiplas camadas Z com mais espaço": "Expand — opens the 3D Tile Layout in fullscreen mode to edit multiple Z layers with more space",
+  "Norte — tile para a borda norte do tapete": "North — tile for the north border of the carpet",
+  "Sul — tile para a borda sul do tapete": "South — tile for the south border of the carpet",
+  "Leste — tile para a borda leste do tapete": "East — tile for the east border of the carpet",
+  "Oeste — tile para a borda oeste do tapete": "West — tile for the west border of the carpet",
+  "Canto interno NW — peça de canto noroeste côncavo do tapete": "Inner Corner NW — northwest concave corner piece of the carpet",
+  "Canto interno NE — peça de canto nordeste côncavo do tapete": "Inner Corner NE — northeast concave corner piece of the carpet",
+  "Canto interno SW — peça de canto sudoeste côncavo do tapete": "Inner Corner SW — southwest concave corner piece of the carpet",
+  "Canto interno SE — peça de canto sudeste côncavo do tapete": "Inner Corner SE — southeast concave corner piece of the carpet",
+  "Diagonal NW — corte diagonal do canto noroeste do tapete": "Diagonal NW — diagonal cut of the northwest corner of the carpet",
+  "Diagonal NE — corte diagonal do canto nordeste do tapete": "Diagonal NE — diagonal cut of the northeast corner of the carpet",
+  "Diagonal SW — corte diagonal do canto sudoeste do tapete": "Diagonal SW — diagonal cut of the southwest corner of the carpet",
+  "Diagonal SE — corte diagonal do canto sudeste do tapete": "Diagonal SE — diagonal cut of the southeast corner of the carpet",
+  "Centro — tile central do tapete (posição 0,0 do padrão)": "Center — central carpet tile (position 0,0 of the pattern)",
+};
+
 // ── Animated Dodecagram Icon ───────────────────────────────────────────────────
 
 const TIPS = [
@@ -159,10 +235,13 @@ function Toggle({ on }: { on: boolean }) {
 
 function StylesMenu({
   darkMode, onDarkMode, effectsEnabled, onEffects,
+  colorTheme, onColorTheme, helpLang, onHelpLang,
   isLoggedIn, onLogin, onLogout,
 }: {
   darkMode: boolean; onDarkMode: (v: boolean) => void;
   effectsEnabled: boolean; onEffects: (v: boolean) => void;
+  colorTheme: string; onColorTheme: (v: string) => void;
+  helpLang: HelpLang; onHelpLang: (v: HelpLang) => void;
   isLoggedIn: boolean; onLogin: (u: string, p: string) => boolean; onLogout: () => void;
 }) {
   const [showLogin, setShowLogin] = useState(false);
@@ -171,110 +250,105 @@ function StylesMenu({
   const [err, setErr] = useState(false);
 
   const handleLogin = () => {
-    if (onLogin(user, pass)) {
-      setUser(""); setPass(""); setErr(false); setShowLogin(false);
-    } else {
-      setErr(true);
-    }
+    if (onLogin(user, pass)) { setUser(""); setPass(""); setErr(false); setShowLogin(false); }
+    else setErr(true);
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleLogin();
-  };
+  const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === "Enter") handleLogin(); };
 
   return (
     <Popover onOpenChange={(open) => { if (!open) { setShowLogin(false); setErr(false); } }}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
+        <button type="button"
           className="h-8 w-8 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
-          title="Display settings"
-          data-testid="button-styles-menu"
-        >
+          title="Display settings" data-testid="button-styles-menu">
           <Settings2 className="w-4 h-4" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-52 p-2" align="end">
+      <PopoverContent className="w-64 p-2" align="end">
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1.5">Display</p>
-        <button
-          type="button"
-          className="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm"
-          onClick={() => onDarkMode(!darkMode)}
-        >
+        <button type="button" className="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm"
+          onClick={() => onDarkMode(!darkMode)}>
           <span className="flex items-center gap-2">
             {darkMode ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
             Dark mode
           </span>
           <Toggle on={darkMode} />
         </button>
-        <button
-          type="button"
-          className="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm"
-          onClick={() => onEffects(!effectsEnabled)}
-        >
-          <span className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            Effects
-          </span>
+        <button type="button" className="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm"
+          onClick={() => onEffects(!effectsEnabled)}>
+          <span className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5" />Effects</span>
           <Toggle on={effectsEnabled} />
         </button>
+
+        {/* ── Color Theme ── */}
+        <div className="mt-2 pt-2 border-t border-border/40">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-2">Color Theme</p>
+          <div className="grid grid-cols-5 gap-1.5 px-1">
+            {COLOR_THEMES.map((t) => (
+              <button key={t.id} type="button" title={t.label}
+                onClick={() => onColorTheme(t.id)}
+                className={[
+                  "w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center",
+                  colorTheme === t.id
+                    ? "border-foreground scale-110 shadow-md"
+                    : "border-transparent hover:border-foreground/40 hover:scale-105",
+                ].join(" ")}
+                style={{ background: `hsl(${t.p})` }}>
+                {colorTheme === t.id && <span className="w-2 h-2 rounded-full bg-white/80 shadow" />}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Help Language ── */}
+        <div className="mt-2 pt-2 border-t border-border/40">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1.5">Help Language</p>
+          <div className="flex gap-1 px-1">
+            {(["en", "pt", "pl", "es"] as const).map((lang) => (
+              <button key={lang} type="button" onClick={() => onHelpLang(lang)}
+                className={[
+                  "flex-1 py-1 rounded text-[11px] font-mono font-bold uppercase transition-colors border",
+                  helpLang === lang
+                    ? "bg-primary/20 border-primary/60 text-primary"
+                    : "border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground",
+                ].join(" ")}>
+                {lang}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* ── Auth section ── */}
         <div className="mt-2 pt-2 border-t border-border/40">
           {isLoggedIn ? (
-            <button
-              type="button"
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground"
-              onClick={onLogout}
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Sign out
+            <button type="button" className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground"
+              onClick={onLogout}>
+              <LogOut className="w-3.5 h-3.5" />Sign out
             </button>
           ) : showLogin ? (
             <div className="space-y-1.5 px-1">
-              <input
-                type="text"
-                placeholder="Username"
-                value={user}
-                onChange={(e) => setUser(e.target.value)}
-                onKeyDown={handleKeyDown}
-                autoFocus
-                className="w-full h-7 px-2 text-xs rounded border border-border bg-background outline-none focus:ring-1 focus:ring-primary"
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full h-7 px-2 text-xs rounded border border-border bg-background outline-none focus:ring-1 focus:ring-primary"
-              />
+              <input type="text" placeholder="Username" value={user}
+                onChange={(e) => setUser(e.target.value)} onKeyDown={handleKeyDown} autoFocus
+                className="w-full h-7 px-2 text-xs rounded border border-border bg-background outline-none focus:ring-1 focus:ring-primary" />
+              <input type="password" placeholder="Password" value={pass}
+                onChange={(e) => setPass(e.target.value)} onKeyDown={handleKeyDown}
+                className="w-full h-7 px-2 text-xs rounded border border-border bg-background outline-none focus:ring-1 focus:ring-primary" />
               {err && <p className="text-[11px] text-destructive">Invalid credentials.</p>}
               <div className="flex gap-1.5 pt-0.5">
-                <button
-                  type="button"
-                  onClick={handleLogin}
-                  className="flex-1 h-7 text-xs rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
-                >
+                <button type="button" onClick={handleLogin}
+                  className="flex-1 h-7 text-xs rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium">
                   Sign in
                 </button>
-                <button
-                  type="button"
-                  onClick={() => { setShowLogin(false); setErr(false); setUser(""); setPass(""); }}
-                  className="h-7 px-2 text-xs rounded border border-border hover:bg-accent transition-colors"
-                >
+                <button type="button" onClick={() => { setShowLogin(false); setErr(false); setUser(""); setPass(""); }}
+                  className="h-7 px-2 text-xs rounded border border-border hover:bg-accent transition-colors">
                   Cancel
                 </button>
               </div>
             </div>
           ) : (
-            <button
-              type="button"
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground"
-              onClick={() => setShowLogin(true)}
-            >
-              <Lock className="w-3.5 h-3.5" />
-              Sign in to edit
+            <button type="button" className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground"
+              onClick={() => setShowLogin(true)}>
+              <Lock className="w-3.5 h-3.5" />Sign in to edit
             </button>
           )}
         </div>
@@ -615,6 +689,8 @@ export default function Home() {
   const [helpMode, setHelpMode] = useState(false);
   const [helpText, setHelpText] = useState<string | null>(null);
   const [helpPos, setHelpPos] = useState({ x: 0, y: 0 });
+  const [colorTheme, setColorTheme] = useState(() => localStorage.getItem("epe-color-theme") || "yellow-light");
+  const [helpLang, setHelpLang] = useState<HelpLang>(() => (localStorage.getItem("epe-help-lang") as HelpLang) || "en");
 
   const handleLogin = (u: string, p: string): boolean => {
     if (u === ADMIN_USER && p === ADMIN_PASS) {
@@ -641,19 +717,79 @@ export default function Home() {
   }, [effectsEnabled]);
 
   useEffect(() => {
+    localStorage.setItem("epe-help-lang", helpLang);
+  }, [helpLang]);
+
+  useEffect(() => {
+    const theme = COLOR_THEMES.find((t) => t.id === colorTheme);
+    if (!theme) return;
+    localStorage.setItem("epe-color-theme", colorTheme);
+    document.getElementById("epe-theme-style")?.remove();
+    const style = document.createElement("style");
+    style.id = "epe-theme-style";
+    const bg7  = theme.sat === 0 ? "0 0% 7%"  : `${theme.hue} ${theme.sat}% 7%`;
+    const bg10 = theme.sat === 0 ? "0 0% 10%" : `${theme.hue} ${theme.sat}% 10%`;
+    const bg11 = theme.sat === 0 ? "0 0% 11%" : `${theme.hue} ${theme.sat}% 11%`;
+    const bg15 = theme.sat === 0 ? "0 0% 15%" : `${theme.hue} ${theme.sat}% 15%`;
+    const bg18 = theme.sat === 0 ? "0 0% 18%" : `${theme.hue} ${theme.sat}% 18%`;
+    style.textContent = `
+      :root {
+        --primary: ${theme.p} !important;
+        --primary-foreground: ${theme.fg} !important;
+        --ring: ${theme.p} !important;
+        --sidebar-primary: ${theme.p} !important;
+        --sidebar-ring: ${theme.p} !important;
+        --sidebar-primary-foreground: ${theme.fg} !important;
+      }
+      .dark {
+        --primary: ${theme.p} !important;
+        --primary-foreground: ${theme.fg} !important;
+        --ring: ${theme.p} !important;
+        --sidebar-primary: ${theme.p} !important;
+        --sidebar-ring: ${theme.p} !important;
+        --sidebar-primary-foreground: ${theme.fg} !important;
+        --background: ${bg7} !important;
+        --card: ${bg11} !important;
+        --sidebar: ${bg10} !important;
+        --popover: ${bg11} !important;
+        --border: ${bg18} !important;
+        --card-border: ${bg18} !important;
+        --sidebar-border: ${bg18} !important;
+        --sidebar-accent: ${bg18} !important;
+        --popover-border: ${bg18} !important;
+        --secondary: ${bg18} !important;
+        --muted: ${bg15} !important;
+        --accent: ${bg18} !important;
+        --input: ${bg18} !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }, [colorTheme]);
+
+  useEffect(() => {
     if (!helpMode) { setHelpText(null); return; }
     const onOver = (e: MouseEvent) => {
       const el = (e.target as Element).closest("[data-help]") as HTMLElement | null;
-      setHelpText(el?.dataset.help ?? null);
+      const pt = el?.dataset.help ?? null;
+      if (!pt) { setHelpText(null); return; }
+      if (helpLang === "pt") { setHelpText(pt); return; }
+      setHelpText(HELP_EN[pt] ?? pt);
     };
-    const onMove = (e: MouseEvent) => setHelpPos({ x: e.clientX + 14, y: e.clientY + 14 });
+    const onMove = (e: MouseEvent) => {
+      const vpW = window.innerWidth;
+      const vpH = window.innerHeight;
+      setHelpPos({
+        x: e.clientX > vpW - 310 ? e.clientX - 296 : e.clientX + 14,
+        y: e.clientY > vpH - 110 ? e.clientY - 84  : e.clientY + 14,
+      });
+    };
     document.addEventListener("mouseover", onOver);
     document.addEventListener("mousemove", onMove);
     return () => {
       document.removeEventListener("mouseover", onOver);
       document.removeEventListener("mousemove", onMove);
     };
-  }, [helpMode]);
+  }, [helpMode, helpLang]);
 
   const isHome = state.activeCategory === "home";
 
@@ -805,6 +941,8 @@ export default function Home() {
         <StylesMenu
           darkMode={darkMode} onDarkMode={setDarkMode}
           effectsEnabled={effectsEnabled} onEffects={setEffectsEnabled}
+          colorTheme={colorTheme} onColorTheme={setColorTheme}
+          helpLang={helpLang} onHelpLang={setHelpLang}
           isLoggedIn={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}
         />
       </header>
