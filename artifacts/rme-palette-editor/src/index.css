@@ -395,12 +395,12 @@ input[type="number"] {
 }
 
 .epe-icon-animating .epe-tip {
-  animation: epe-tip-burst 0.55s ease-out var(--tip-delay, 0s) both;
+  animation: epe-tip-burst 0.5s ease-out 0s both;
   transform-box: fill-box;
   transform-origin: 16px 16px;
 }
 .epe-icon-animating .epe-body {
-  animation: epe-body-pulse 0.55s ease-out both;
+  animation: epe-body-pulse 0.5s ease-out 0s both;
   transform-box: fill-box;
   transform-origin: 16px 16px;
 }

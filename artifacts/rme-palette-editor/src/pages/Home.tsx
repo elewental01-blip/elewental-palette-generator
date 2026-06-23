@@ -119,7 +119,6 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
           style={{
             "--tip-dx": tip.dx,
             "--tip-dy": tip.dy,
-            "--tip-delay": `${i * 0.028}s`,
           } as React.CSSProperties}
         />
       ))}
@@ -208,36 +207,47 @@ function SidebarItem({ id, label, active, onSelect, onDelete }: {
 
 // ── Landing page (home) ────────────────────────────────────────────────────────
 
-function LandingPage({ effectsEnabled, dispatch }: {
+const PAGE_SIZE = 10;
+
+function LandingPage({ effectsEnabled }: {
   effectsEnabled: boolean;
-  dispatch: ReturnType<typeof useEditor>["dispatch"];
 }) {
   const [posts, setPosts] = useState<BlogPost[]>(() => loadPosts());
-  const [activePostId, setActivePostId] = useState<string>(posts[0]?.id ?? "");
   const [blogSidebarOpen, setBlogSidebarOpen] = useState(true);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editHtml, setEditHtml] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [page, setPage] = useState(0);
+  const mainRef = useRef<HTMLDivElement>(null);
 
   const updatePosts = (next: BlogPost[]) => { setPosts(next); savePosts(next); };
 
+  // Always sorted by order — first item drives the feed
   const sorted = [...posts].sort((a, b) => a.order - b.order);
-  const activePost = posts.find((p) => p.id === activePostId) ?? sorted[0];
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const pagePosts = sorted.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   const createPost = () => {
     const id = crypto.randomUUID();
     const order = posts.length;
-    const newPost: BlogPost = { id, title: "New Page", order, html: "<h2>New Page</h2>\n<p>Edit this content using the Edit button.</p>" };
+    const newPost: BlogPost = {
+      id, title: "New Page", order,
+      html: "<h2>New Page</h2>\n<p>Edit this content using the Edit button.</p>",
+    };
     const next = [...posts, newPost];
     updatePosts(next);
-    setActivePostId(id);
-    setEditingPostId(id);
-    setEditHtml(newPost.html);
+    // Jump to last page so new post is visible
+    setPage(Math.floor(next.length / PAGE_SIZE));
+    startEdit(newPost);
   };
 
   const deletePost = (id: string) => {
     const next = posts.filter((p) => p.id !== id);
     updatePosts(next);
-    if (activePostId === id) setActivePostId(next[0]?.id ?? "");
+    if (editingPostId === id) setEditingPostId(null);
+    // Clamp page
+    const newTotal = Math.ceil(next.length / PAGE_SIZE);
+    if (page >= newTotal && newTotal > 0) setPage(newTotal - 1);
   };
 
   const movePost = (id: string, dir: -1 | 1) => {
@@ -246,7 +256,7 @@ function LandingPage({ effectsEnabled, dispatch }: {
     const swapIdx = idx + dir;
     if (swapIdx < 0 || swapIdx >= s.length) return;
     const next = posts.map((p) => {
-      if (p.id === s[idx].id) return { ...p, order: s[swapIdx].order };
+      if (p.id === s[idx].id)    return { ...p, order: s[swapIdx].order };
       if (p.id === s[swapIdx].id) return { ...p, order: s[idx].order };
       return p;
     });
@@ -256,79 +266,119 @@ function LandingPage({ effectsEnabled, dispatch }: {
   const startEdit = (post: BlogPost) => {
     setEditingPostId(post.id);
     setEditHtml(post.html);
+    setEditTitle(post.title);
   };
 
   const saveEdit = () => {
     if (!editingPostId) return;
-    const next = posts.map((p) => p.id === editingPostId ? { ...p, html: editHtml } : p);
+    const next = posts.map((p) =>
+      p.id === editingPostId ? { ...p, html: editHtml, title: editTitle } : p
+    );
     updatePosts(next);
     setEditingPostId(null);
   };
 
-  const updateTitle = (id: string, title: string) => {
-    updatePosts(posts.map((p) => p.id === id ? { ...p, title } : p));
+  const cancelEdit = () => setEditingPostId(null);
+
+  const goToPage = (p: number) => {
+    setPage(p);
+    mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Sidebar: clicking a post jumps to the page containing it
+  const jumpToPost = (id: string) => {
+    const idx = sorted.findIndex((p) => p.id === id);
+    if (idx < 0) return;
+    const targetPage = Math.floor(idx / PAGE_SIZE);
+    setPage(targetPage);
+    mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Blog sidebar */}
-      <aside className={["border-r border-border bg-sidebar flex flex-col shrink-0 transition-all duration-200", blogSidebarOpen ? "w-52" : "w-10"].join(" ")}>
+      <aside
+        className={[
+          "border-r border-border bg-sidebar flex flex-col shrink-0 transition-all duration-200",
+          blogSidebarOpen ? "w-52" : "w-10",
+        ].join(" ")}
+      >
         {blogSidebarOpen ? (
           <>
             <div className="p-3 border-b border-border flex items-center justify-between min-h-[48px]">
               <h2 className="font-semibold text-sidebar-foreground text-sm">Pages</h2>
               <div className="flex items-center gap-1">
-                <button type="button" onClick={createPost}
+                <button
+                  type="button" onClick={createPost}
                   className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  title="New page">
+                  title="New page"
+                >
                   <Plus className="w-4 h-4" />
                 </button>
-                <button type="button" onClick={() => setBlogSidebarOpen(false)}
+                <button
+                  type="button" onClick={() => setBlogSidebarOpen(false)}
                   className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  title="Collapse">
+                  title="Collapse"
+                >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
               </div>
             </div>
             <ScrollArea className="flex-1 p-1.5">
               <div className="space-y-0.5">
-                {sorted.map((post, sortedIdx) => (
-                  <div
-                    key={post.id}
-                    className={["rounded-md flex items-center group transition-colors",
-                      activePostId === post.id ? "bg-primary/10" : "hover:bg-sidebar-accent"].join(" ")}
-                  >
-                    <button
-                      type="button"
-                      className="flex-1 text-left px-2.5 py-2 text-xs truncate text-sidebar-foreground"
-                      onClick={() => setActivePostId(post.id)}
+                {sorted.map((post, sortedIdx) => {
+                  const onCurrentPage =
+                    sortedIdx >= page * PAGE_SIZE && sortedIdx < (page + 1) * PAGE_SIZE;
+                  return (
+                    <div
+                      key={post.id}
+                      className={[
+                        "rounded-md flex items-center group transition-colors",
+                        onCurrentPage ? "bg-primary/10" : "hover:bg-sidebar-accent",
+                      ].join(" ")}
                     >
-                      {post.title}
-                    </button>
-                    <div className="flex items-center gap-0.5 pr-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <button type="button" onClick={() => movePost(post.id, -1)} disabled={sortedIdx === 0}
-                        className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 rounded transition-colors">
-                        <ChevronUp className="w-3 h-3" />
+                      <button
+                        type="button"
+                        className="flex-1 text-left px-2.5 py-2 text-xs truncate text-sidebar-foreground"
+                        onClick={() => jumpToPost(post.id)}
+                      >
+                        {post.title}
                       </button>
-                      <button type="button" onClick={() => movePost(post.id, 1)} disabled={sortedIdx === sorted.length - 1}
-                        className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 rounded transition-colors">
-                        <ChevronDown className="w-3 h-3" />
-                      </button>
-                      <button type="button" onClick={() => deletePost(post.id)}
-                        className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-destructive rounded transition-colors">
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                      <div className="flex items-center gap-0.5 pr-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <button
+                          type="button" onClick={() => movePost(post.id, -1)}
+                          disabled={sortedIdx === 0}
+                          className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 rounded transition-colors"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </button>
+                        <button
+                          type="button" onClick={() => movePost(post.id, 1)}
+                          disabled={sortedIdx === sorted.length - 1}
+                          className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 rounded transition-colors"
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </button>
+                        <button
+                          type="button" onClick={() => deletePost(post.id)}
+                          className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-destructive rounded transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollArea>
           </>
         ) : (
           <div className="flex flex-col items-center pt-2 gap-2">
-            <button type="button" onClick={() => setBlogSidebarOpen(true)}
+            <button
+              type="button" onClick={() => setBlogSidebarOpen(true)}
               className="w-8 h-8 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              title="Expand">
+              title="Expand"
+            >
               <ChevronRight className="w-4 h-4" />
             </button>
             <FileText className="w-4 h-4 text-muted-foreground/50" />
@@ -336,66 +386,96 @@ function LandingPage({ effectsEnabled, dispatch }: {
         )}
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto bg-background">
-        {/* Hero — always fixed at top */}
+      {/* Main content — blog feed */}
+      <main ref={mainRef} className="flex-1 overflow-y-auto bg-background">
+        {/* Hero — always at top */}
         <div className="flex flex-col items-center justify-center pt-14 pb-10 px-8">
           <AnimatedDodecagramIcon size={92} effectsEnabled={effectsEnabled} className="mb-5 drop-shadow-lg" />
           <h1 className="text-4xl font-bold tracking-tight mb-1">Elewental Palette Editor</h1>
           <p className="text-muted-foreground text-sm tracking-widest font-mono uppercase">EPE — RME Palette Tool</p>
         </div>
 
-        {/* Blog post content */}
-        {activePost && (
-          <div className="max-w-3xl mx-auto px-8 pb-16">
-            {/* Post header */}
-            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
-              <div className="flex items-center gap-2">
-                {editingPostId === activePost.id ? (
-                  <input
-                    value={activePost.title}
-                    onChange={(e) => updateTitle(activePost.id, e.target.value)}
-                    className="text-lg font-semibold bg-transparent border-b border-primary/50 outline-none px-1 min-w-[120px]"
+        {/* Blog feed — posts in order */}
+        {pagePosts.length > 0 ? (
+          <div className="max-w-3xl mx-auto px-8 pb-8 space-y-12">
+            {pagePosts.map((post) => (
+              <article key={post.id} id={`post-${post.id}`}>
+                {/* Post header */}
+                <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+                  {editingPostId === post.id ? (
+                    <input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="text-lg font-semibold bg-transparent border-b border-primary/50 outline-none px-1 min-w-[180px] flex-1 mr-4"
+                    />
+                  ) : (
+                    <h2 className="text-lg font-semibold">{post.title}</h2>
+                  )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {editingPostId === post.id ? (
+                      <>
+                        <Button size="sm" className="h-7 text-xs gap-1.5" onClick={saveEdit}>
+                          <Eye className="w-3.5 h-3.5" /> Save
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={cancelEdit}>
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => startEdit(post)}>
+                        <Edit3 className="w-3.5 h-3.5" /> Edit
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Post content */}
+                {editingPostId === post.id ? (
+                  <textarea
+                    className="w-full h-80 font-mono text-sm bg-muted/30 border border-border rounded p-3 resize-y outline-none focus:ring-1 focus:ring-primary"
+                    value={editHtml}
+                    onChange={(e) => setEditHtml(e.target.value)}
+                    spellCheck={false}
+                    placeholder="Enter HTML content here…"
                   />
                 ) : (
-                  <h2 className="text-lg font-semibold">{activePost.title}</h2>
+                  <div
+                    className="prose prose-sm dark:prose-invert max-w-none text-foreground"
+                    dangerouslySetInnerHTML={{ __html: post.html }}
+                  />
                 )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                {editingPostId === activePost.id ? (
-                  <Button size="sm" className="h-7 text-xs gap-1.5" onClick={saveEdit}>
-                    <Eye className="w-3.5 h-3.5" /> Save
-                  </Button>
-                ) : (
-                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => startEdit(activePost)}>
-                    <Edit3 className="w-3.5 h-3.5" /> Edit
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Content */}
-            {editingPostId === activePost.id ? (
-              <textarea
-                className="w-full h-96 font-mono text-sm bg-muted/30 border border-border rounded p-3 resize-y outline-none focus:ring-1 focus:ring-primary"
-                value={editHtml}
-                onChange={(e) => setEditHtml(e.target.value)}
-                spellCheck={false}
-                placeholder="Enter HTML content here…"
-              />
-            ) : (
-              <div
-                className="prose prose-sm dark:prose-invert max-w-none text-foreground"
-                dangerouslySetInnerHTML={{ __html: activePost.html }}
-              />
-            )}
+              </article>
+            ))}
           </div>
-        )}
-
-        {posts.length === 0 && (
+        ) : (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <FileText className="w-10 h-10 mb-3 opacity-30" />
             <p>No pages yet. Click + in the sidebar to create one.</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 pb-12 mt-4">
+            <button
+              type="button"
+              onClick={() => goToPage(page - 1)}
+              disabled={page === 0}
+              className="w-8 h-8 rounded border border-border flex items-center justify-center text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm text-muted-foreground">
+              Page {page + 1} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages - 1}
+              className="w-8 h-8 rounded border border-border flex items-center justify-center text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         )}
       </main>
@@ -541,7 +621,7 @@ export default function Home() {
 
       {/* ── Body ── */}
       {isHome ? (
-        <LandingPage effectsEnabled={effectsEnabled} dispatch={dispatch} />
+        <LandingPage effectsEnabled={effectsEnabled} />
       ) : (
         <div className="flex flex-1 overflow-hidden">
           {/* ── Left Sidebar ── */}
