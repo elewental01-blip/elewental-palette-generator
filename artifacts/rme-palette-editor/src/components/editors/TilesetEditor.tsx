@@ -10,9 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { generateTilesetEntriesXml } from "@/lib/xml-generators";
 
 const SECTION_COLORS: Record<TilesetSectionType, string> = {
-  terrain: "text-emerald-400 border-emerald-500/30 bg-emerald-500/8",
-  doodad:  "text-amber-400  border-amber-500/30  bg-amber-500/8",
-  raw:     "text-slate-400  border-slate-500/30   bg-slate-500/8",
+  terrain: "text-primary border-primary/30 bg-primary/8",
+  doodad:  "text-primary border-primary/30 bg-primary/8",
+  raw:     "text-primary border-primary/30 bg-primary/8",
 };
 
 export function TilesetEditor() {

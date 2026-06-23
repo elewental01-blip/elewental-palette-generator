@@ -11,7 +11,7 @@ import { XmlPreview } from "@/components/XmlPreview";
 import {
   Layers, Image as ImageIcon, Box, BrickWall, Database, Home as HomeIcon,
   Plus, Trash2, ChevronLeft, ChevronRight, Moon, Sun, Sparkles, Settings2,
-  ChevronUp, ChevronDown, Edit3, Eye, FileText, Lock, LogOut, Search,
+  ChevronUp, ChevronDown, Edit3, Eye, FileText, Lock, LogOut, Search, RotateCcw,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -36,28 +36,85 @@ interface BlogPost {
   html: string;
 }
 
+const TUTORIAL_POST_ID = "epe-tutorial-default";
+
 const DEFAULT_POSTS: BlogPost[] = [
   {
-    id: "welcome",
-    title: "Welcome",
+    id: TUTORIAL_POST_ID,
+    title: "Guia Completo — EPE",
     order: 0,
-    html: `<h2 style="font-size:1.5rem;font-weight:700;margin-bottom:0.75rem">Welcome to Elewental Palette Editor</h2>
-<p style="margin-bottom:1rem">EPE is a visual XML palette editor for <strong>Remere's Map Editor (RME)</strong>. It lets you create and edit palette configurations for borders, grounds, doodads, walls, carpets, and tilesets — and export them as valid RME XML.</p>
-<h3 style="font-size:1.1rem;font-weight:600;margin-bottom:0.5rem">Getting Started</h3>
-<ul style="list-style:disc;padding-left:1.5rem;margin-bottom:1rem;display:flex;flex-direction:column;gap:0.25rem">
-  <li>Use the navigation tabs above to switch between editors.</li>
-  <li>Create items using the <strong>+</strong> button in the sidebar.</li>
-  <li>Fill in the fields — the XML output updates live.</li>
-  <li>Copy or download the XML when ready.</li>
+    html: `<h2 style="font-size:1.5rem;font-weight:700;margin-bottom:0.75rem">Guia Completo — Elewental Palette Editor</h2>
+<p style="margin-bottom:1rem">O <strong>Elewental Palette Editor (EPE)</strong> é um editor visual de paletas XML para o <strong>Remere's Map Editor (RME)</strong>. Crie e edite configurações de grounds, borders, doodads, walls, carpets e tilesets — e exporte como XML válido para o RME.</p>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🗃 Tilesets</h3>
+<p style="margin-bottom:0.5rem">Agrupa brushes em seções para exibição na paleta do RME.</p>
+<ul style="list-style:disc;padding-left:1.5rem;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem">
+  <li><strong>Nome do Tileset</strong> — obrigatório; define o nome exibido na paleta do RME.</li>
+  <li><strong>+ Terrain</strong> — adiciona seção de terrain brushes (grounds e borders).</li>
+  <li><strong>+ Doodad</strong> — adiciona seção de doodad brushes (objetos decorativos).</li>
+  <li><strong>+ Raw</strong> — adiciona seção raw com IDs diretos e ranges de itens.</li>
+  <li>Dentro de cada seção, adicione entradas do tipo <em>brush</em> (por nome), <em>item</em> (por ID) ou <em>range</em> (faixa de IDs contínuos).</li>
 </ul>
-<h3 style="font-size:1.1rem;font-weight:600;margin-bottom:0.5rem">Modules</h3>
-<ul style="list-style:disc;padding-left:1.5rem;display:flex;flex-direction:column;gap:0.25rem">
-  <li><strong>Tilesets</strong> — Register brushes into terrain, doodad, or raw sections.</li>
-  <li><strong>Grounds</strong> — Configure ground brushes with items, borders, and friends.</li>
-  <li><strong>Borders</strong> — Set border IDs per direction using the direction grid.</li>
-  <li><strong>Doodads &amp; Carpets</strong> — Compose simple or multi-tile brushes.</li>
-  <li><strong>Walls</strong> — Configure wall types with doors (horizontal, vertical, corner, pole).</li>
-</ul>`,
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🌿 Grounds</h3>
+<p style="margin-bottom:0.5rem">Configure brushes de ground com itens, bordas e friends.</p>
+<ul style="list-style:disc;padding-left:1.5rem;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem">
+  <li><strong>Nome</strong> — nome do brush de ground (referenciado em tilesets e borders).</li>
+  <li><strong>Z-order</strong> — ordem de sobreposição no mapa.</li>
+  <li><strong>Itens</strong> — lista de IDs de tiles que compõem o ground, com chance de aparição (0–100).</li>
+  <li><strong>Border</strong> — nome do brush de borda associado a este ground.</li>
+  <li><strong>Friends</strong> — brushes amigos (sem borda gerada entre eles no mapa).</li>
+</ul>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🔲 Borders</h3>
+<p style="margin-bottom:0.5rem">Define IDs de tiles por direção usando o Direction Grid visual.</p>
+<ul style="list-style:disc;padding-left:1.5rem;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem">
+  <li><strong>Direction Grid</strong> — clique em qualquer célula (N, S, E, W, cantos, diagonais) e insira o ID do tile de borda correspondente.</li>
+  <li>Direções: <em>N, S, E, W</em> (lados) · <em>CNW, CNE, CSW, CSE</em> (cantos internos) · <em>DNW, DNE, DSW, DSE</em> (diagonais).</li>
+  <li>Clique duplo sobre um badge para editar o valor. Clique no ✕ para remover a direção.</li>
+  <li>As cores dos ícones de direção seguem o Color Theme selecionado.</li>
+</ul>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🧩 Doodads</h3>
+<p style="margin-bottom:0.5rem">Crie brushes de doodad em três modos:</p>
+<ul style="list-style:disc;padding-left:1.5rem;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem">
+  <li><strong>+ Simple</strong> — um único tile com ID e chance. Ideal para objetos 1×1.</li>
+  <li><strong>+ Composite</strong> — grade de tiles 2D configurável. Clique em cada célula para definir o ID. A célula de origem (0,0) é destacada pela cor do tema.</li>
+  <li><strong>+ Composite 3D</strong> — grade com múltiplos andares Z (−4 a +4). Use os botões ↑↓ ou os chips Z para navegar entre camadas. Ideal para objetos verticais e estruturas com altura.</li>
+</ul>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🧱 Walls</h3>
+<p style="margin-bottom:0.5rem">Configure brushes de parede com tipos e portas.</p>
+<ul style="list-style:disc;padding-left:1.5rem;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem">
+  <li>Tipos disponíveis: <em>Horizontal</em>, <em>Vertical</em>, <em>Corner</em> e <em>Pole</em>.</li>
+  <li>Cada tipo expõe: <strong>ID</strong> (look ID), <strong>Server Look ID</strong> e <strong>Draggable</strong>.</li>
+  <li><em>Horizontal</em> e <em>Vertical</em> aceitam portas (door) com seus próprios IDs e Server Look IDs.</li>
+  <li>O atributo <code>server_lookid</code> é sempre incluído no XML, mesmo com valor 0.</li>
+  <li><em>Corner</em> e <em>Pole</em> não possuem portas (conforme especificação RME).</li>
+</ul>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🟫 Carpets</h3>
+<p style="margin-bottom:0.5rem">Configure brushes de carpet com modo single ou multi-tile.</p>
+<ul style="list-style:disc;padding-left:1.5rem;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem">
+  <li><strong>Single</strong> — um tile central. Insira o ID diretamente na célula central do Direction Grid.</li>
+  <li><strong>Multi</strong> — grade com direções (N, S, E, W, cantos). Cada posição aceita um ou mais IDs com chance de aparição.</li>
+  <li>Os ícones visuais de direção seguem a cor do Color Theme ativo.</li>
+</ul>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">⚙️ Display Settings</h3>
+<ul style="list-style:disc;padding-left:1.5rem;display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.75rem">
+  <li><strong>Dark Mode</strong> — alterna entre modo claro e escuro. A preferência é salva automaticamente.</li>
+  <li><strong>Effects</strong> — ativa ou desativa as animações do ícone EPE e outros efeitos visuais.</li>
+  <li><strong>Color Theme</strong> — 20 temas de cor disponíveis. A cor principal (primary) afeta toda a interface: grids de direção, botões de criação, tags de seção, ícones do sistema, XML Output e tooltips do Modo Ajuda.</li>
+  <li><strong>Help Language</strong> — escolha entre <em>EN</em> (inglês) e <em>PT</em> (português) para os textos dos tooltips do Modo Ajuda.</li>
+  <li><strong>Reset All Settings</strong> — restaura todas as configurações ao padrão inicial e recria automaticamente este post de boas-vindas.</li>
+</ul>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">❓ Modo Ajuda</h3>
+<p style="margin-bottom:0.75rem">Clique no botão <strong>?</strong> na barra superior para ativar o Modo Ajuda. Com ele ativo, passe o mouse sobre qualquer elemento da interface para ver sua descrição em um tooltip flutuante. A cor do tooltip e do botão segue o Color Theme ativo.</p>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">📋 XML Output</h3>
+<p>O painel de <strong>XML Output</strong> atualiza em tempo real conforme você preenche os campos de cada editor. Use o botão <strong>Copy</strong> para copiar o XML para a área de transferência, ou <strong>Download</strong> para salvar como arquivo <code>.xml</code>. A cor do texto XML segue o Color Theme selecionado.</p>`,
   },
 ];
 
@@ -206,17 +263,14 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
       onClick={triggerBurst}
       aria-label="EPE icon"
     >
-      <polygon className="epe-body" points={INNER_BODY} fill="#EAB308" />
+      <polygon className="epe-body" points={INNER_BODY} style={{ fill: "hsl(var(--primary))" }} />
       {TIPS.map((tip, i) => (
         <polygon
           key={`${i}-${burstId}`}
           className="epe-tip"
           points={tip.points}
-          fill="#EAB308"
-          style={{
-            "--tip-dx": tip.dx,
-            "--tip-dy": tip.dy,
-          } as React.CSSProperties}
+          style={{ "--tip-dx": tip.dx, "--tip-dy": tip.dy, fill: "hsl(var(--primary))" } as React.CSSProperties}
+
         />
       ))}
     </svg>
@@ -236,13 +290,14 @@ function Toggle({ on }: { on: boolean }) {
 function StylesMenu({
   darkMode, onDarkMode, effectsEnabled, onEffects,
   colorTheme, onColorTheme, helpLang, onHelpLang,
-  isLoggedIn, onLogin, onLogout,
+  isLoggedIn, onLogin, onLogout, onReset,
 }: {
   darkMode: boolean; onDarkMode: (v: boolean) => void;
   effectsEnabled: boolean; onEffects: (v: boolean) => void;
   colorTheme: string; onColorTheme: (v: string) => void;
   helpLang: HelpLang; onHelpLang: (v: HelpLang) => void;
   isLoggedIn: boolean; onLogin: (u: string, p: string) => boolean; onLogout: () => void;
+  onReset: () => void;
 }) {
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState("");
@@ -316,6 +371,17 @@ function StylesMenu({
               </button>
             ))}
           </div>
+        </div>
+
+        {/* ── Reset All Settings ── */}
+        <div className="mt-2 pt-2 border-t border-border/40">
+          <button type="button"
+            onClick={onReset}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-destructive/10 transition-colors text-sm text-muted-foreground hover:text-destructive"
+            data-testid="button-reset-settings">
+            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+            Reset All Settings
+          </button>
         </div>
 
         {/* ── Auth section ── */}
@@ -694,6 +760,20 @@ export default function Home() {
     const s = localStorage.getItem("epe-help-lang");
     return s === "pt" ? "pt" : "en";
   });
+  const [landingKey, setLandingKey] = useState(0);
+
+  const handleReset = () => {
+    localStorage.removeItem("epe-color-theme");
+    localStorage.removeItem("epe-effects");
+    localStorage.removeItem("epe-help-lang");
+    localStorage.removeItem("rme-theme");
+    localStorage.removeItem("epe-blog-posts");
+    setColorTheme("yellow-light");
+    setEffectsEnabled(true);
+    setDarkMode(false);
+    setHelpLang("en");
+    setLandingKey((k) => k + 1);
+  };
 
   const handleLogin = (u: string, p: string): boolean => {
     if (u === ADMIN_USER && p === ADMIN_PASS) {
@@ -947,12 +1027,13 @@ export default function Home() {
           colorTheme={colorTheme} onColorTheme={setColorTheme}
           helpLang={helpLang} onHelpLang={setHelpLang}
           isLoggedIn={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}
+          onReset={handleReset}
         />
       </header>
 
       {/* ── Body ── */}
       {isHome ? (
-        <LandingPage effectsEnabled={effectsEnabled} isLoggedIn={isLoggedIn} />
+        <LandingPage key={landingKey} effectsEnabled={effectsEnabled} isLoggedIn={isLoggedIn} />
       ) : (
         <div className="flex flex-1 overflow-hidden">
           {/* ── Left Sidebar ── */}

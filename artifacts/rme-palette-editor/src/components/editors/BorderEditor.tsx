@@ -10,7 +10,7 @@ import { X, Plus } from "lucide-react";
 
 function BorderIcon({ dir }: { dir: BorderDirection }) {
   const g = "hsl(215 20% 30%)";
-  const a = "hsl(45 90% 55%)";
+  const a = "hsl(var(--primary))";
   const icons: Record<BorderDirection, React.ReactNode> = {
     n: (<><rect width="24" height="17" fill={g} /><rect y="17" width="24" height="7" fill={a} /></>),
     s: (<><rect width="24" height="7" fill={a} /><rect y="7" width="24" height="17" fill={g} /></>),

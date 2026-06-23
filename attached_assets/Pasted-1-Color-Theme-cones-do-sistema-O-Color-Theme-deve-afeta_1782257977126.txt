@@ -1,0 +1,188 @@
+1. Color Theme → ícones do sistema
+
+
+
+- O Color Theme deve afetar também:
+
+
+
+  - Ícone do menu superior (top bar) (e efeito)
+
+  - Ícone da Home Page (e efeito)
+
+
+
+- Comportamento:
+
+  - Cor padrão: amarelo
+
+  - Deve ser alterada dinamicamente conforme seleção do Color Theme
+
+  - A mudança deve ser aplicada em tempo real
+
+
+
+---
+
+
+
+2. Display Settings → reset global
+
+
+
+- Abaixo de “Help Language”, adicionar botão:
+
+
+
+  - Reset All Settings (ou equivalente de reset geral)
+
+
+
+- Comportamento:
+
+  - Restaurar todas as configurações do sistema para o padrão inicial
+
+  - Incluindo:
+
+    - Color Theme
+
+    - Help Mode settings
+
+    - UI preferences
+
+    - layouts
+
+    - toggles gerais
+
+
+
+---
+
+
+
+3. Home Page → blog tutorial automático
+
+
+
+- Criar um post inicial no blog da Home Page.
+
+
+
+- Conteúdo:
+
+  - O sistema deve gerar uma leitura completa de tudo que o aplicativo faz
+
+  - Criar um guia/tutorial estruturado explicando cada menu e função
+
+
+
+- Estrutura do post:
+
+  - organizado por seções
+
+  - explicação clara de cada módulo, pela ordem do menu.
+
+
+
+- Persistência:
+
+  - esse post deve ser salvo como página inicial padrão do blog
+
+
+
+- Comportamento especial:
+
+  - essa página pode ser deletada manualmente
+
+  - porém, se o usuário clicar em “Reset Settings” em Display Settings:
+
+    - o sistema deve recriar automaticamente esse post padrão
+
+
+
+---
+
+
+
+4. Tilesets → botões de criação (+ Terrain / + Doodad / + Raw)
+
+
+
+- Problema recorrente:
+
+  - os botões não estão seguindo corretamente o Color Theme
+
+
+
+- Correção obrigatória:
+
+  - todos os botões abaixo devem seguir a cor global do Color Theme:
+
+
+
+    - + Terrain
+
+    - + Doodad
+
+    - + Raw
+
+
+
+- Cor padrão: amarelo
+
+- Deve atualizar dinamicamente ao mudar o tema
+
+
+
+---
+
+
+
+5. Direction Grid → Borders e Carpets
+
+
+
+- Problema atual:
+
+  - os indicadores visuais das direções continuam amarelos mesmo após mudança de Color Theme
+
+
+
+- Correções obrigatórias:
+
+
+
+5.1 Bordas visuais das caixas indicadoras de direção
+
+- Cada direção do grid (N, S, E, W, corners etc.) deve:
+
+  - mudar a cor conforme Color Theme
+
+  - não permanecer amarelo fixo
+
+
+
+5.2 Carpet Direction Grid
+
+- Mesmo comportamento aplicado ao sistema de carpets
+
+- Garantir consistência total entre módulos
+
+
+
+---
+
+
+
+6. Tileset Tags → cor dinâmica
+
+
+
+- As tags geradas no sistema de Tilesets devem seguir o Color Theme.
+
+
+
+- Cor padrão: amarelo
+
+- Deve atualizar dinamicamente quando o Color Theme for alterado
+

@@ -12,7 +12,7 @@ import { TilesetRegistration } from "./TilesetRegistration";
 
 function CarpetIcon({ dir }: { dir: CarpetAlignDirection }) {
   const g = "hsl(215 20% 30%)";
-  const a = "hsl(45 90% 55%)";
+  const a = "hsl(var(--primary))";
 
   const icons: Record<CarpetAlignDirection, React.ReactNode> = {
     n:      (<><rect width="24" height="17" fill={g}/><rect y="17" width="24" height="7" fill={a}/></>),
@@ -356,7 +356,7 @@ export function CarpetEditor() {
             <span><strong className="text-foreground/60">S</strong> = single ID</span>
             <span><strong className="text-foreground/60">M</strong> = multiple items with chance</span>
             <div className="flex items-center gap-1.5">
-              <svg viewBox="0 0 14 14" width={14} height={14}><rect width="14" height="14" fill="hsl(215 20% 30%)"/><rect x="3" y="3" width="8" height="8" fill="hsl(45 90% 55%)"/></svg>
+              <svg viewBox="0 0 14 14" width={14} height={14}><rect width="14" height="14" fill="hsl(215 20% 30%)"/><rect x="3" y="3" width="8" height="8" fill="hsl(var(--primary))"/></svg>
               center
             </div>
           </div>
