@@ -1163,7 +1163,7 @@ export default function Home() {
       )}
       {helpMode && helpText && (
         <div
-          className="fixed z-[9999] pointer-events-none px-3 py-2 rounded-lg text-xs font-medium shadow-xl border animate-in fade-in duration-100 bg-primary/10 dark:bg-background/95 text-foreground border-primary/30 dark:border-primary/20"
+          className="fixed z-[9999] pointer-events-none px-3 py-2 rounded-lg text-xs font-medium shadow-xl border animate-in fade-in duration-100 bg-background/95 dark:bg-background/95 text-foreground border-primary/40"
           style={{ left: helpPos.x, top: helpPos.y, maxWidth: 280 }}
         >
           {helpText}

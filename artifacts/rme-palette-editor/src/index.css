@@ -381,7 +381,7 @@ input[type="number"] {
    paint-order: stroke fill ensures the stroke is drawn under the fill,
    extending only outward — invisible at rest (tips cover it), fills gaps during animation. */
 .epe-body {
-  stroke: #EAB308;
+  stroke: hsl(var(--primary));
   stroke-width: 2.5;
   paint-order: stroke fill;
 }
