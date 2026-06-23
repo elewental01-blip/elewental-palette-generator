@@ -41,7 +41,7 @@ export interface CarpetItem {
 
 export type DoodadElementType =
   | { type: "simple"; id: number; chance: number; alternate?: boolean; }
-  | { type: "composite"; chance: number; tiles: { x: number; y: number; itemId: number }[]; alternate?: boolean; }
+  | { type: "composite"; chance: number; tiles: { x: number; y: number; z?: number; itemId: number }[]; alternate?: boolean; }
   | { type: "alternate"; items: { id: number; chance: number; }[]; };
 
 export interface DoodadItem {

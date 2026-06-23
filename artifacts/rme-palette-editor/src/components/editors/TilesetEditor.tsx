@@ -178,28 +178,43 @@ export function TilesetEditor() {
                     {entry.kind === "item" && (
                       <Input
                         className="h-8 text-sm flex-1"
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         placeholder="id"
                         value={entry.id || ""}
-                        onChange={(e) => updateEntry(si, ei, { kind: "item", id: parseInt(e.target.value) || 0 })}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "");
+                          updateEntry(si, ei, { kind: "item", id: parseInt(val) || 0 });
+                        }}
                       />
                     )}
                     {entry.kind === "range" && (
                       <>
                         <Input
                           className="h-8 text-sm flex-1"
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           placeholder="fromid"
                           value={entry.fromid || ""}
-                          onChange={(e) => updateEntry(si, ei, { kind: "range", fromid: parseInt(e.target.value) || 0, toid: entry.toid })}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            updateEntry(si, ei, { kind: "range", fromid: parseInt(val) || 0, toid: entry.toid });
+                          }}
                         />
                         <span className="text-muted-foreground text-xs shrink-0">→</span>
                         <Input
                           className="h-8 text-sm flex-1"
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           placeholder="toid"
                           value={entry.toid || ""}
-                          onChange={(e) => updateEntry(si, ei, { kind: "range", fromid: entry.fromid, toid: parseInt(e.target.value) || 0 })}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            updateEntry(si, ei, { kind: "range", fromid: entry.fromid, toid: parseInt(val) || 0 });
+                          }}
                         />
                       </>
                     )}
@@ -236,17 +251,6 @@ export function TilesetEditor() {
         </div>
       </div>
 
-      {/* Copy XML button */}
-      {activeItem.name && (
-        <div className="pt-4 border-t border-border/40">
-          <Button variant="outline" onClick={copyXml} className="gap-2">
-            Copy Tileset XML
-          </Button>
-          <p className="text-xs text-muted-foreground mt-2">
-            Copies the full tileset XML for <code className="font-mono">{activeItem.name}</code> to clipboard.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

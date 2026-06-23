@@ -6,105 +6,197 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CardContent } from "@/components/ui/card";
-import { Plus, Trash2, AlertCircle, ArrowUp, ArrowDown, Pencil, X, Repeat2 } from "lucide-react";
+import { Plus, Trash2, AlertCircle, ArrowUp, ArrowDown, Pencil, X, Repeat2, ChevronUp, ChevronDown } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TilesetRegistration } from "./TilesetRegistration";
 
 // ── Composite tile visual grid ───────────────────────────────────────────────
 
-type CompositeTile = { x: number; y: number; itemId: number };
+type CompositeTile = { x: number; y: number; z?: number; itemId: number };
+
+const RANGE_OPTIONS = [3, 4, 6, 9, 12] as const;
+type RangeOption = (typeof RANGE_OPTIONS)[number];
+const CELL_SIZE: Record<RangeOption, number> = { 3: 80, 4: 64, 6: 48, 9: 40, 12: 34 };
+const Z_MIN = -6;
+const Z_MAX = 6;
 
 function CompositeTileGrid({ tiles, onChange }: { tiles: CompositeTile[]; onChange: (tiles: CompositeTile[]) => void }) {
-  const [addingCell, setAddingCell]   = useState<{ x: number; y: number } | null>(null);
-  const [editingCell, setEditingCell] = useState<{ x: number; y: number } | null>(null);
-  const [inputVal, setInputVal]       = useState("");
+  const [range, setRange]           = useState<RangeOption>(3);
+  const [activeZ, setActiveZ]       = useState(0);
+  const [expandedGrid, setExpanded] = useState(false);
+  const [addingCell, setAdding]     = useState<{ x: number; y: number } | null>(null);
+  const [editingCell, setEditing]   = useState<{ x: number; y: number } | null>(null);
+  const [inputVal, setInputVal]     = useState("");
 
-  const minX = Math.min(0, ...tiles.map((t) => t.x));
-  const maxX = Math.max(2, ...tiles.map((t) => t.x));
-  const minY = Math.min(0, ...tiles.map((t) => t.y));
-  const maxY = Math.max(2, ...tiles.map((t) => t.y));
-  const startX = minX - 1; const endX = maxX + 1;
-  const startY = minY - 1; const endY = maxY + 1;
-  const cols = endX - startX + 1; const rows = endY - startY + 1;
+  const isLargeGrid = range > 6;
+  const CELL        = CELL_SIZE[range];
+  const gridMin     = -range;
+  const gridMax     = range;
+  const size        = gridMax - gridMin + 1;
 
-  const tileAt = (x: number, y: number) => tiles.find((t) => t.x === x && t.y === y);
-  const cancel = () => { setAddingCell(null); setEditingCell(null); setInputVal(""); };
-  const startAdding  = (x: number, y: number)             => { setAddingCell({ x, y }); setEditingCell(null); setInputVal(""); };
-  const startEditing = (x: number, y: number, id: number) => { setEditingCell({ x, y }); setAddingCell(null); setInputVal(String(id)); };
+  const tilesOnZ = (z: number) => tiles.filter((t) => (t.z ?? 0) === z);
+  const tileAt   = (x: number, y: number) => tiles.find((t) => t.x === x && t.y === y && (t.z ?? 0) === activeZ);
+  const occupiedZ = [...new Set(tiles.map((t) => t.z ?? 0))].sort((a, b) => a - b);
+  const zLabel    = (z: number) => `Z${z >= 0 ? "+" : ""}${z}`;
 
-  const commitAdd  = (x: number, y: number) => { const id = parseInt(inputVal); if (!isNaN(id) && id > 0) onChange([...tiles, { x, y, itemId: id }]); cancel(); };
-  const commitEdit = (x: number, y: number) => { const id = parseInt(inputVal); if (!isNaN(id) && id > 0) onChange(tiles.map((t) => (t.x === x && t.y === y ? { ...t, itemId: id } : t))); cancel(); };
-  const removeTile = (x: number, y: number) => { onChange(tiles.filter((t) => !(t.x === x && t.y === y))); cancel(); };
+  const cancel      = () => { setAdding(null); setEditing(null); setInputVal(""); };
+  const startAdd    = (x: number, y: number) => { setAdding({ x, y }); setEditing(null); setInputVal(""); };
+  const startEdit   = (x: number, y: number, id: number) => { setEditing({ x, y }); setAdding(null); setInputVal(String(id)); };
+  const commitAdd   = (x: number, y: number) => { const id = parseInt(inputVal); if (!isNaN(id) && id > 0) onChange([...tiles, { x, y, z: activeZ, itemId: id }]); cancel(); };
+  const commitEdit  = (x: number, y: number) => { const id = parseInt(inputVal); if (!isNaN(id) && id > 0) onChange(tiles.map((t) => t.x === x && t.y === y && (t.z ?? 0) === activeZ ? { ...t, itemId: id } : t)); cancel(); };
+  const removeTile  = (x: number, y: number) => { onChange(tiles.filter((t) => !(t.x === x && t.y === y && (t.z ?? 0) === activeZ))); cancel(); };
 
-  const CELL = 96;
-
-  return (
-    <div className="space-y-3">
-      <p className="text-[11px] text-muted-foreground">Click an empty cell to add · use ✏ and ✕ to edit or remove</p>
-      <div className="inline-grid gap-1.5 rounded-lg border border-border/50 bg-sidebar p-2" style={{ gridTemplateColumns: `repeat(${cols}, ${CELL}px)` }} data-testid="composite-tile-grid">
-        {Array.from({ length: rows }).map((_, rowIdx) =>
-          Array.from({ length: cols }).map((_, colIdx) => {
-            const x = startX + colIdx; const y = startY + rowIdx;
-            const tile = tileAt(x, y);
-            const isAdding = addingCell?.x === x && addingCell?.y === y;
+  const GridContent = () => (
+    <div className="overflow-auto">
+      <div
+        className="inline-grid gap-0.5 rounded-lg border border-border/50 bg-sidebar p-1.5"
+        style={{ gridTemplateColumns: `repeat(${size}, ${CELL}px)` }}
+        data-testid="composite-tile-grid"
+      >
+        {Array.from({ length: size }).map((_, rowIdx) =>
+          Array.from({ length: size }).map((_, colIdx) => {
+            const x        = gridMin + colIdx;
+            const y        = gridMin + rowIdx;
+            const tile     = tileAt(x, y);
+            const isAdd    = addingCell?.x === x && addingCell?.y === y;
             const isEdit   = editingCell?.x === x && editingCell?.y === y;
             const isOrigin = x === 0 && y === 0;
             return (
               <div
                 key={`${x}-${y}`}
                 data-testid={`composite-cell-${x}-${y}`}
-                className={["relative flex flex-col items-center justify-center rounded-md border transition-all select-none overflow-hidden",
-                  tile ? "bg-primary/15 border-primary/50"
-                  : isAdding || isEdit ? "bg-accent/20 border-primary border-dashed"
-                  : isOrigin ? "bg-muted/30 border-border/60 border-dashed cursor-pointer hover:bg-accent/20"
+                className={[
+                  "relative flex flex-col items-center justify-center rounded-md border transition-all select-none overflow-hidden",
+                  tile    ? "bg-primary/15 border-primary/50"
+                  : isAdd || isEdit ? "bg-accent/20 border-primary border-dashed"
+                  : isOrigin ? "bg-orange-500/15 border-orange-500/70 cursor-pointer hover:bg-orange-500/25 ring-1 ring-orange-500/20"
                   : "bg-muted/10 border-border/20 cursor-pointer hover:bg-accent/20 hover:border-border/50",
                 ].join(" ")}
                 style={{ width: CELL, height: CELL }}
-                onClick={() => !tile && !isAdding && !isEdit && startAdding(x, y)}
-                title={!tile ? `x=${x} y=${y}` : undefined}
+                onClick={() => !tile && !isAdd && !isEdit && startAdd(x, y)}
+                title={!tile ? `x=${x} y=${y} ${zLabel(activeZ)}` : undefined}
               >
-                <span className="absolute top-1 left-1.5 text-[9px] font-mono text-muted-foreground/40 pointer-events-none">{x},{y}</span>
+                <span className="absolute top-0.5 left-0.5 text-[7px] font-mono text-muted-foreground/25 pointer-events-none leading-none">{x},{y}</span>
+                {isOrigin && !tile && !isAdd && !isEdit && (
+                  <span className="text-[9px] font-bold text-orange-500/60 pointer-events-none">0,0</span>
+                )}
                 {tile && !isEdit && (
-                  <div className="flex flex-col items-center gap-1.5 w-full px-2" onClick={(e) => e.stopPropagation()}>
-                    <span className="text-base font-mono font-bold text-primary leading-none">{tile.itemId}</span>
-                    <div className="flex gap-1.5 w-full justify-center">
-                      <button type="button" onClick={() => startEditing(x, y, tile.itemId)} data-testid={`button-edit-tile-${x}-${y}`}
-                        className="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-muted hover:bg-accent border border-border/50 text-muted-foreground hover:text-foreground transition-colors text-[11px]" title="Edit ID">
-                        <Pencil className="w-3 h-3 shrink-0" /><span>edit</span>
+                  <div className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-sm font-mono font-bold text-primary leading-none">{tile.itemId}</span>
+                    <div className="flex gap-0.5 w-full justify-center">
+                      <button type="button" onClick={() => startEdit(x, y, tile.itemId)} data-testid={`button-edit-tile-${x}-${y}`}
+                        className="flex-1 flex items-center justify-center py-0.5 rounded bg-muted hover:bg-accent border border-border/50 text-muted-foreground hover:text-foreground transition-colors" title="Edit">
+                        <Pencil className="w-2.5 h-2.5" />
                       </button>
                       <button type="button" onClick={() => removeTile(x, y)} data-testid={`button-clear-tile-${x}-${y}`}
-                        className="flex items-center justify-center px-2 py-1 rounded bg-muted hover:bg-destructive/20 border border-border/50 hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors" title="Remove tile">
-                        <X className="w-3 h-3" />
+                        className="flex items-center justify-center px-1 py-0.5 rounded bg-muted hover:bg-destructive/20 border border-border/50 hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-colors" title="Remove">
+                        <X className="w-2.5 h-2.5" />
                       </button>
                     </div>
                   </div>
                 )}
-                {isAdding && !tile && (
-                  <form className="flex flex-col items-center gap-1.5 w-full px-2" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitAdd(x, y); }}>
-                    <Input autoFocus type="number" placeholder="ID" value={inputVal} onChange={(e) => setInputVal(e.target.value)} className="h-7 w-full text-sm text-center px-1" onKeyDown={(e) => e.key === "Escape" && cancel()} />
-                    <div className="flex gap-1 w-full">
-                      <button type="submit" className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded bg-primary text-primary-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity"><Plus className="w-3 h-3" /> add</button>
-                      <button type="button" onClick={cancel} className="px-2 py-1.5 rounded bg-muted border border-border/60 text-muted-foreground hover:text-foreground transition-colors"><X className="w-3 h-3" /></button>
+                {isAdd && !tile && (
+                  <form className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitAdd(x, y); }}>
+                    <Input autoFocus type="number" placeholder="ID" value={inputVal} onChange={(e) => setInputVal(e.target.value)}
+                      className="h-5 w-full text-[10px] text-center px-0.5" onKeyDown={(e) => e.key === "Escape" && cancel()} />
+                    <div className="flex gap-0.5 w-full">
+                      <button type="submit" className="flex-1 flex items-center justify-center py-0.5 rounded bg-primary text-primary-foreground text-[9px] font-semibold hover:opacity-90">✓</button>
+                      <button type="button" onClick={cancel} className="px-1 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground hover:text-foreground"><X className="w-2 h-2" /></button>
                     </div>
                   </form>
                 )}
                 {isEdit && tile && (
-                  <form className="flex flex-col items-center gap-1.5 w-full px-2" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitEdit(x, y); }}>
-                    <Input autoFocus type="number" value={inputVal} onChange={(e) => setInputVal(e.target.value)} className="h-7 w-full text-sm text-center px-1" onKeyDown={(e) => e.key === "Escape" && cancel()} />
-                    <div className="flex gap-1 w-full">
-                      <button type="submit" className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded bg-primary text-primary-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity">ok</button>
-                      <button type="button" onClick={cancel} className="px-2 py-1.5 rounded bg-muted border border-border/60 text-muted-foreground hover:text-foreground transition-colors"><X className="w-3 h-3" /></button>
+                  <form className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitEdit(x, y); }}>
+                    <Input autoFocus type="number" value={inputVal} onChange={(e) => setInputVal(e.target.value)}
+                      className="h-5 w-full text-[10px] text-center px-0.5" onKeyDown={(e) => e.key === "Escape" && cancel()} />
+                    <div className="flex gap-0.5 w-full">
+                      <button type="submit" className="flex-1 flex items-center justify-center py-0.5 rounded bg-primary text-primary-foreground text-[9px] font-semibold hover:opacity-90">✓</button>
+                      <button type="button" onClick={cancel} className="px-1 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground hover:text-foreground"><X className="w-2 h-2" /></button>
                     </div>
                   </form>
                 )}
-                {!tile && !isAdding && !isEdit && (
-                  <Plus className={`w-5 h-5 ${isOrigin ? "text-muted-foreground/40" : "text-muted-foreground/20"}`} />
+                {!tile && !isAdd && !isEdit && !isOrigin && (
+                  <Plus className="w-3.5 h-3.5 text-muted-foreground/15" />
                 )}
               </div>
             );
           })
         )}
       </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[11px] text-muted-foreground">Click a cell to add · ✏ edit · ✕ remove · orange cell = origin (0,0)</p>
+
+      {/* Range selector */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
+        {RANGE_OPTIONS.map((r) => (
+          <button key={r} type="button"
+            onClick={() => { setRange(r); if (r <= 6) setExpanded(false); }}
+            className={[
+              "px-2 py-0.5 text-xs rounded border transition-colors",
+              range === r ? "bg-primary/20 border-primary text-primary font-semibold" : "border-border/40 text-muted-foreground hover:border-border hover:text-foreground",
+            ].join(" ")}
+          >
+            ±{r}
+          </button>
+        ))}
+        {range > 6 && <span className="text-[10px] text-muted-foreground/50 ml-0.5">expanded view</span>}
+      </div>
+
+      {/* Z layer controls */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground font-medium shrink-0">Z layer:</span>
+          <button type="button" onClick={() => setActiveZ((z) => Math.max(Z_MIN, z - 1))} disabled={activeZ === Z_MIN}
+            className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors">−</button>
+          <span className="font-mono text-xs min-w-[3.5rem] text-center bg-muted/40 border border-border/40 rounded px-2 py-0.5 leading-5">
+            {zLabel(activeZ)}
+          </span>
+          <button type="button" onClick={() => setActiveZ((z) => Math.min(Z_MAX, z + 1))} disabled={activeZ === Z_MAX}
+            className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors">+</button>
+          <span className="text-[11px] text-muted-foreground">{tilesOnZ(activeZ).length} tile{tilesOnZ(activeZ).length !== 1 ? "s" : ""}</span>
+        </div>
+        {occupiedZ.length > 0 && (
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="text-[10px] text-muted-foreground/50 shrink-0">Occupied:</span>
+            {occupiedZ.map((z) => (
+              <button key={z} type="button" onClick={() => setActiveZ(z)}
+                className={[
+                  "px-1.5 py-0 text-[10px] font-mono rounded border transition-colors leading-5",
+                  z === activeZ
+                    ? "bg-orange-500/20 border-orange-500/60 text-orange-400 font-bold"
+                    : "border-border/40 text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                ].join(" ")}
+                title={`${zLabel(z)}: ${tilesOnZ(z).length} tile${tilesOnZ(z).length !== 1 ? "s" : ""}`}
+              >
+                {zLabel(z)} ({tilesOnZ(z).length})
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Grid */}
+      {isLargeGrid ? (
+        <div className="space-y-2">
+          <Button size="sm" variant="outline" className="gap-1.5 h-7 text-xs" onClick={() => setExpanded((v) => !v)}>
+            {expandedGrid ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            {expandedGrid ? "Collapse grid" : `Open ±${range} grid`}
+            <span className="text-muted-foreground/60">({size}×{size})</span>
+          </Button>
+          {expandedGrid && (
+            <div className="border border-border/50 rounded-lg p-2 bg-card/50 overflow-auto max-h-[65vh]">
+              <GridContent />
+            </div>
+          )}
+        </div>
+      ) : (
+        <GridContent />
+      )}
     </div>
   );
 }
@@ -219,8 +311,8 @@ export function DoodadEditor() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="doodad-lookid">Server LookID</Label>
-            <Input id="doodad-lookid" type="number" value={activeItem.serverLookId || ""}
-              onChange={(e) => updateField("serverLookId", parseInt(e.target.value) || undefined)}
+            <Input id="doodad-lookid" type="number" value={activeItem.serverLookId ?? 0}
+              onChange={(e) => updateField("serverLookId", parseInt(e.target.value) || 0)}
               data-testid="input-doodad-lookid" />
           </div>
           <div className="space-y-2">

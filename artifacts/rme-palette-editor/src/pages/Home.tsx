@@ -104,7 +104,7 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
     if (bursting) return;
     setBursting(true);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setBursting(false), 700);
+    timeoutRef.current = setTimeout(() => setBursting(false), 490);
   };
 
   useEffect(() => () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); }, []);
@@ -406,8 +406,9 @@ function LandingPage({ effectsEnabled, isLoggedIn }: {
                 {isLoggedIn && (
                   <button
                     type="button" onClick={createPost}
-                    className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    title="New page"
+                    disabled={sorted.length >= 50}
+                    className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${sorted.length >= 50 ? "text-muted-foreground/30 cursor-not-allowed" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
+                    title={sorted.length >= 50 ? "Page limit reached (50 max)" : "New page"}
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -634,6 +635,7 @@ export default function Home() {
     { id: "doodads",  label: "Doodads",  icon: ImageIcon },
     { id: "walls",    label: "Walls",    icon: BrickWall },
   ];
+  const visibleCategories = isHome ? categories : categories.filter((c) => c.id !== "home");
 
   // ── Items for non-doodad sidebar ──────────────────────────────────────────
   const currentItems: { id: string; [key: string]: any }[] = (() => {
@@ -680,7 +682,7 @@ export default function Home() {
 
   const handleCreateDoodad = () => {
     const id = crypto.randomUUID();
-    dispatch({ type: "ADD_DOODAD", doodad: { id, name: "New Doodad", draggable: true, onBlocking: false, thickness: "10/100", elements: [] } });
+    dispatch({ type: "ADD_DOODAD", doodad: { id, name: "New Doodad", serverLookId: 0, draggable: true, onBlocking: false, thickness: "10/100", elements: [] } });
   };
   const handleCreateCarpet = () => {
     const id = crypto.randomUUID();
@@ -724,7 +726,7 @@ export default function Home() {
         )}
 
         <nav className="flex items-center gap-1 flex-1 overflow-x-auto">
-          {categories.map((cat) => {
+          {visibleCategories.map((cat) => {
             const Icon = cat.icon;
             const isActive = state.activeCategory === cat.id;
             return (

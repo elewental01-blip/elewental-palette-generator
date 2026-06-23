@@ -387,9 +387,9 @@ input[type="number"] {
 }
 
 @keyframes epe-tip-burst {
-  0%          { translate: 0 0; }
-  25%         { translate: calc(var(--tip-dx, 0) * 5px) calc(var(--tip-dy, 0) * 5px); }
-  70%, 100%   { translate: 0 0; }
+  0%   { translate: 0 0; }
+  18%  { translate: calc(var(--tip-dx, 0) * 5px) calc(var(--tip-dy, 0) * 5px); }
+  100% { translate: 0 0; }
 }
 @keyframes epe-body-pulse {
   0%, 100%    { scale: 1;    opacity: 1; }
@@ -402,7 +402,7 @@ input[type="number"] {
 }
 
 .epe-icon-animating .epe-tip {
-  animation: epe-tip-burst 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0s both;
+  animation: epe-tip-burst 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) 0s forwards;
   transform-box: view-box;
   transform-origin: center;
 }

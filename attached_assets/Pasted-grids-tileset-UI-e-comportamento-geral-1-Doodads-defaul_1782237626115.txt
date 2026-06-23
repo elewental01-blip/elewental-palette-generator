@@ -1,0 +1,201 @@
+grids, tileset, UI e comportamento geral
+
+
+
+1. Doodads → default server lookid
+
+
+
+- Ao configurar um novo doodad brush:
+
+  - Se o campo “server lookid” não for preenchido, o valor padrão deve ser 0.
+
+
+
+---
+
+
+
+2. Tile Layout (Composite Grid) → centralização e range dinâmico
+
+
+
+- O grid atual possui 5x5, porém o ponto (0,0) está desalinhado visualmente.
+
+
+
+- Ajustes obrigatórios:
+
+  - O tile (0,0) deve estar sempre centralizado no grid.
+
+  - O tile (0,0) deve ter destaque visual (ex: highlight laranja).
+
+
+
+- Range atual:
+
+  - Hoje o grid permite aproximadamente:
+
+    - X positivo até 3
+
+    - X negativo até -1
+
+
+
+- Correção:
+
+  - O range padrão deve ser -3 até 3.
+
+  - Deve ser possível expandir dinamicamente até -9 até 9 (X e Y).
+
+
+
+- Comportamento:
+
+  - Usuário pode escolher o range do grid (ex: -3|3, -4|4, -6|6, -9|9, até -12|12).
+
+  - O sistema deve recalcular o grid mantendo (0,0) sempre no centro.
+
+  - Para manter espaçamento correto, acima de -6|6: (-7|7, -8|8, -9|9, -10|10, -11|11, -12|12) -> abrir o tile layout numa janela expandida.
+
+
+
+---
+
+
+
+3. Tile Layout → suporte a camada Z
+
+
+
+- O tile layout atualmente suporta apenas X e Y.
+
+- Deve ser adicionada a dimensão Z.
+
+
+
+- Comportamento do Z:
+
+  - Range permitido: -6 até 6.
+
+  - Cada nível Z representa uma camada independente do grid.
+
+
+
+- UI/UX:
+
+  - As camadas devem ser empilhadas visualmente.
+
+  - Camadas não selecionadas devem ficar parcialmente transparentes.
+
+  - A camada ativa deve estar sempre em destaque (top layer visual).
+
+
+
+- Navegação entre camadas:
+
+  - Deve existir controle para subir/descer entre níveis Z.
+
+  - Alternar camada traz o grid correspondente para o topo.
+
+
+
+---
+
+
+
+4. Pages (menu de páginas) → limite
+
+
+
+- Definir limite máximo de criação de páginas:
+
+  - 50 páginas no total.
+
+
+
+---
+
+
+
+5. Ícone do sistema → ajuste de animação final
+
+
+
+- A animação do ícone está melhor, porém:
+
+  - No final da animação ainda existe um pequeno delay antes de retornar ao estado estático.
+
+
+
+- Ajuste necessário:
+
+  - Remover ou reduzir esse delay final.
+
+  - Transição entre estado animado → estático deve ser imediata e suave.
+
+
+
+---
+
+
+
+6. Navegação → comportamento do Home no menu superior
+
+
+
+- Clicar no ícone ou no texto “EPE” no menu superior leva à Home page.
+
+
+
+- Regra de visibilidade:
+
+  - O item “Home” no menu lateral não deve aparecer enquanto o usuário estiver fora da Home.
+
+  - O item “Home” só deve aparecer quando:
+
+    - o usuário estiver dentro da Home.
+
+
+
+---
+
+
+
+7. Tilesets → validação de inputs numéricos
+
+
+
+- Em “Tilesets → sections”:
+
+
+
+  - Ao adicionar um item do tipo “+ item”:
+
+    - Deve aceitar apenas valores numéricos.
+
+    - Bloquear entrada de letras ou caracteres não numéricos.
+
+
+
+  - Mesmo comportamento deve ser aplicado ao campo “range”.
+
+
+
+---
+
+
+
+8. Tilesets → remoção de botão redundante
+
+
+
+- Remover o botão:
+
+  - “Copy tileset xml” (parte inferior do menu Tilesets)
+
+
+
+- Justificativa:
+
+  - O XML já pode ser copiado diretamente pelo output existente.
