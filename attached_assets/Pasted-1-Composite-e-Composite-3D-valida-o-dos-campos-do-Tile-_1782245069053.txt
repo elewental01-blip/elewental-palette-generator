@@ -1,0 +1,254 @@
+1. Composite e Composite 3D → validação dos campos do Tile Layout
+
+
+
+- Todos os campos do Tile Layout devem aceitar apenas valores numéricos.
+
+
+
+- Aplicar a validação em:
+
+  - Composite
+
+  - Composite 3D
+
+
+
+- Não permitir:
+
+  - letras
+
+  - símbolos
+
+  - caracteres especiais
+
+
+
+- Permitir apenas números válidos para IDs.
+
+
+
+- O bloqueio deve ocorrer durante a digitação, não apenas na geração do XML.
+
+
+
+---
+
+
+
+2. Composite 3D → lógica visual correta das camadas Z
+
+
+
+- A visualização atual das camadas não está representando corretamente o conceito de andares utilizado em mapas estilo Tibia/Remere's Map Editor.
+
+
+
+- Utilizar como referência o mesmo conceito de floors do Remere's Map Editor:
+
+
+
+  0
+
+  1
+
+  2
+
+  3
+
+  4
+
+  5
+
+  6
+
+  7 (térreo)
+
+  8
+
+  9
+
+  10
+
+  11
+
+  12
+
+  13
+
+  14
+
+  15
+
+
+
+- Dentro do editor de Composite 3D, considerar:
+
+
+
+  - Z = 0 → camada principal (térreo)
+
+  - Z negativo → andares acima do térreo
+
+  - Z positivo → andares abaixo do térreo
+
+
+
+Exemplo:
+
+
+
+  Z -1 = 1 andar acima
+
+  Z -2 = 2 andares acima
+
+
+
+  Z +1 = 1 andar abaixo
+
+  Z +2 = 2 andares abaixo
+
+
+
+---
+
+
+
+Representação visual desejada
+
+
+
+- Imagine várias folhas de papel empilhadas.
+
+
+
+- A folha central representa a camada atual (Z = 0).
+
+
+
+- As folhas acima representam os valores negativos.
+
+
+
+- As folhas abaixo representam os valores positivos.
+
+
+
+Exemplo:
+
+
+
+          Z -3
+
+          Z -2
+
+          Z -1
+
+       ───────────
+
+          Z  0
+
+       ───────────
+
+          Z +1
+
+          Z +2
+
+          Z +3
+
+
+
+- Quando o usuário estiver visualizando Z = 0:
+
+  - devem ser visíveis algumas camadas acima (negativas)
+
+  - e algumas camadas abaixo (positivas)
+
+
+
+- Quando o usuário navegar para Z = -1:
+
+  - essa camada passa a ser a camada ativa
+
+  - as demais continuam empilhadas corretamente acima e abaixo dela
+
+
+
+- Quando o usuário navegar para Z = +1:
+
+  - essa camada passa a ser a camada ativa
+
+  - as demais continuam empilhadas corretamente acima e abaixo dela
+
+
+
+---
+
+
+
+Posicionamento visual das camadas
+
+
+
+- As camadas devem ser desenhadas em perspectiva 45°.
+
+
+
+- As camadas superiores (Z negativo) devem aparecer deslocadas para norte-esquerda.
+
+
+
+- As camadas inferiores (Z positivo) devem aparecer deslocadas para sul-direita.
+
+
+
+- Quanto mais distante da camada atual:
+
+  - maior o deslocamento visual
+
+  - porém sem exagero para não comprometer a leitura
+
+
+
+---
+
+
+
+Visibilidade das camadas
+
+
+
+- Os contornos das camadas secundárias devem ser claramente visíveis.
+
+
+
+- Não utilizar transparência excessiva.
+
+
+
+- O usuário deve conseguir identificar facilmente:
+
+  - qual camada está ativa
+
+  - quais estão acima
+
+  - quais estão abaixo
+
+
+
+- A camada ativa deve sempre possuir maior destaque visual.
+
+
+
+Objetivo:
+
+
+
+- Fazer com que a navegação entre Z negativo e Z positivo seja imediatamente compreensível visualmente.
+
+- Reproduzir a mesma lógica mental utilizada ao trabalhar com andares/floors no Remere's Map Editor.
+
+- Permitir que o usuário identifique rapidamente se está editando um andar superior, térreo ou subterrâneo apenas observando a pilha de camadas.
+
+
+

@@ -82,7 +82,8 @@ function buildGridCells(
           {isAdd && !tile && (
             <form className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitAdd(x, y); }}>
               <Input autoFocus type="number" placeholder="ID" value={inputVal} onChange={(e) => setInputVal(e.target.value)}
-                className="h-5 w-full text-[10px] text-center px-0.5" onKeyDown={(e) => e.key === "Escape" && cancel()} />
+                className="h-5 w-full text-[10px] text-center px-0.5"
+                onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); if (e.key === "Escape") cancel(); }} />
               <div className="flex gap-0.5 w-full">
                 <button type="submit" className="flex-1 flex items-center justify-center py-0.5 rounded bg-primary text-primary-foreground text-[9px] font-semibold hover:opacity-90">✓</button>
                 <button type="button" onClick={cancel} className="px-1 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground hover:text-foreground"><X className="w-2 h-2" /></button>
@@ -92,7 +93,8 @@ function buildGridCells(
           {isEdit && tile && (
             <form className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitEdit(x, y); }}>
               <Input autoFocus type="number" value={inputVal} onChange={(e) => setInputVal(e.target.value)}
-                className="h-5 w-full text-[10px] text-center px-0.5" onKeyDown={(e) => e.key === "Escape" && cancel()} />
+                className="h-5 w-full text-[10px] text-center px-0.5"
+                onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); if (e.key === "Escape") cancel(); }} />
               <div className="flex gap-0.5 w-full">
                 <button type="submit" className="flex-1 flex items-center justify-center py-0.5 rounded bg-primary text-primary-foreground text-[9px] font-semibold hover:opacity-90">✓</button>
                 <button type="button" onClick={cancel} className="px-1 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground hover:text-foreground"><X className="w-2 h-2" /></button>
@@ -211,42 +213,43 @@ function Composite3DGrid({ tiles, onChange }: {
   const removeTile = (x: number, y: number) => { onChange(tiles.filter((t) => !(t.x === x && t.y === y && t.z === activeZ))); cancel(); };
 
   // Z layers to render: active + occupied ones within ±Z3D_VISIBLE range
-  // Sorted descending so highest Z (SE / behind) is rendered first
+  // Sort descending (highest Z first) so Z+ layers (SE/underground) render before Z- (NW/above)
   const renderLayers = [...new Set([activeZ, ...occupiedZ.filter((z) => Math.abs(z - activeZ) <= Z3D_VISIBLE)])]
-    .sort((a, b) => {
-      const da = Math.abs(a - activeZ);
-      const db = Math.abs(b - activeZ);
-      return db - da || b - a; // furthest first → rendered in background
-    });
+    .sort((a, b) => b - a);
 
-  // All background layers project south-east (shadow-stack effect)
-  const maxAbsDz = Math.max(0, ...renderLayers.map((z) => Math.abs(z - activeZ)));
+  const dzValues  = renderLayers.map((z) => z - activeZ);
+  // Z- layers project NW → need padding on left/top
+  const maxNegDz  = Math.abs(Math.min(0, ...dzValues));
+  // Z+ layers project SE → need padding on right/bottom
+  const maxPosDz  = Math.max(0, ...dzValues);
 
   // renderStack accepts a cell size so dialog can use larger cells
   const renderStack = (cell: number) => {
     const gridW      = size * cell + (size - 1) * 2;
-    const containerW = gridW + maxAbsDz * Z3D_STEP_X + 24;
-    const containerH = size * cell + (size - 1) * 2 + maxAbsDz * Z3D_STEP_Y + 24;
-    const baseLeft   = 12; // active layer always at origin
-    const baseTop    = 12;
+    const containerW = gridW + (maxNegDz + maxPosDz) * Z3D_STEP_X + 24;
+    const containerH = size * cell + (size - 1) * 2 + (maxNegDz + maxPosDz) * Z3D_STEP_Y + 24;
+    const baseLeft   = maxNegDz * Z3D_STEP_X + 12; // offset so NW layers have room
+    const baseTop    = maxNegDz * Z3D_STEP_Y + 12;
 
     return (
       <div className="overflow-auto">
         <div style={{ position: "relative", width: containerW, height: containerH }}>
           {renderLayers.map((z) => {
-            const dz = z - activeZ;
-            const adz = Math.abs(dz);
+            const dz     = z - activeZ;
+            const adz    = Math.abs(dz);
             const isActive = dz === 0;
-            // all background layers project south-east (shadow-stack)
-            const left = baseLeft + adz * Z3D_STEP_X;
-            const top  = baseTop  + adz * Z3D_STEP_Y;
-            const opacity = isActive ? 1 : Math.max(0.25, 0.72 - adz * 0.15);
+            // Z- (negative) → north-west (upper floors); Z+ (positive) → south-east (lower floors)
+            const left = baseLeft + dz * Z3D_STEP_X;
+            const top  = baseTop  + dz * Z3D_STEP_Y;
+            // Keep layers clearly visible — minimum 45% opacity
+            const opacity = isActive ? 1 : Math.max(0.45, 0.88 - adz * 0.12);
             const layerTiles = tilesOnZ(z);
 
             return (
               <div key={z} style={{
                 position: "absolute", left, top,
-                zIndex: isActive ? 30 : Math.max(5, 20 - adz * 4),
+                // Z- (upper floors) in front of active; Z+ (lower floors) behind active
+                zIndex: isActive ? 30 : dz < 0 ? 20 + adz : Math.max(5, 15 - dz),
                 opacity,
                 pointerEvents: isActive ? "auto" : "none",
                 transition: "opacity 0.15s",
@@ -333,7 +336,7 @@ function Composite3DGrid({ tiles, onChange }: {
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-muted-foreground">
-        Projeção SE — camadas fora do Z ativo projetam-se <span className="text-orange-400 font-medium">sudeste</span> · Z negativo = superior · Z positivo = inferior · clique para adicionar
+        Perspectiva 45° — Z negativo = andar <span className="text-blue-400 font-medium">acima</span> (noroeste) · Z positivo = andar <span className="text-orange-400 font-medium">abaixo</span> (sudeste) · clique para adicionar
       </p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
