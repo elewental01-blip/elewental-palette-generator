@@ -1,0 +1,351 @@
+Composite 3D, Home, Help Mode, Carpet Configuration e XML Panel
+
+
+
+1. Composite 3D → orientação visual das layers
+
+
+
+- A representação visual das layers está invertida.
+
+
+
+- Correção necessária:
+
+  - As layers inferiores (sombra/projeção visual) devem aparecer deslocadas para sul-direita.
+
+  - Atualmente a projeção está indo para norte-esquerda.
+
+
+
+- Objetivo:
+
+  - Tornar a leitura espacial intuitiva.
+
+  - Deve ficar evidente que:
+
+    - Z negativo representa uma layer superior.
+
+    - Z positivo representa uma layer inferior.
+
+
+
+- A visualização atual das camadas não deixa essa relação clara.
+
+- Reforçar a percepção de profundidade através do posicionamento e empilhamento visual das layers.
+
+
+
+---
+
+
+
+2. Composite Grid (2D) → seleção padrão
+
+
+
+- Ao abrir ou criar um novo Composite Grid:
+
+  - Os campos não devem vir preenchidos automaticamente com IDs.
+
+
+
+- Comportamento esperado:
+
+  - Apenas a coordenada (0,0) deve iniciar selecionada.
+
+  - Nenhum campo deve conter ID por padrão.
+
+  - Os tiles devem iniciar vazios até configuração manual do usuário.
+
+
+
+---
+
+
+
+3. Home Page → remoção de texto
+
+
+
+- Na área fixa da logo e título da Home:
+
+  - Remover o texto:
+
+
+
+    "EPE — RME Palette Tool"
+
+
+
+- Deve permanecer apenas a identidade visual definida para a Home.
+
+
+
+---
+
+
+
+4. Help Mode (novo recurso)
+
+
+
+- Adicionar um novo botão ao lado de "Display Settings".
+
+
+
+- Ícone:
+
+  - Lupa
+
+
+
+- Nome:
+
+  - Help Mode
+
+
+
+- Função:
+
+  - Ativar/desativar sistema de ajuda contextual em todo o aplicativo.
+
+
+
+Comportamento:
+
+
+
+- Ao passar o mouse sobre:
+
+  - botões
+
+  - campos
+
+  - títulos
+
+  - labels
+
+  - informações
+
+  - seções
+
+
+
+  deve aparecer uma caixa flutuante explicativa.
+
+
+
+Estilo visual:
+
+
+
+- Design minimalista.
+
+- Fundo semitransparente.
+
+
+
+- Se Dark Mode estiver ativo:
+
+  - fundo preto translúcido.
+
+
+
+- Se Dark Mode estiver desativado:
+
+  - fundo amarelo translúcido.
+
+
+
+Animações:
+
+
+
+- Fade in suave ao aparecer.
+
+- Fade out suave ao remover o mouse.
+
+
+
+Exemplo:
+
+
+
+- Em Borders → Direction Grid:
+
+  - Ao passar o mouse sobre "N":
+
+    - exibir "North"
+
+
+
+  - Ao passar sobre "S":
+
+    - exibir "South"
+
+
+
+  - Ao passar sobre "E":
+
+    - exibir "East"
+
+
+
+  - Ao passar sobre "W":
+
+    - exibir "West"
+
+
+
+  - Aplicar o mesmo conceito para todas as siglas do sistema.
+
+
+
+Objetivo:
+
+- Tornar o editor mais acessível para novos usuários sem poluir a interface.
+
+
+
+---
+
+
+
+5. Doodads → Carpet Configuration → Direction Grid
+
+
+
+- Aplicar o mesmo comportamento já utilizado no Direction Grid de Borders.
+
+
+
+Comportamento esperado:
+
+
+
+- Digitar um ID.
+
+- Clicar fora do campo.
+
+- O valor deve ser registrado automaticamente.
+
+
+
+- Não deve ser necessário clicar em "Add".
+
+
+
+- Edição:
+
+  - Duplo clique permite editar o valor já existente.
+
+  - Manter consistência com o sistema utilizado em Borders.
+
+
+
+---
+
+
+
+6. Doodads → Carpet Configuration → correção de align
+
+
+
+- Atualmente existe uma inversão entre os campos N e S no XML output.
+
+
+
+Correção necessária:
+
+
+
+- Campo S (parte superior):
+
+  - deve gerar:
+
+
+
+    align="s"
+
+
+
+- Campo N (parte inferior):
+
+  - deve gerar:
+
+
+
+    align="n"
+
+
+
+- Garantir que todas as demais direções estejam sendo exportadas corretamente.
+
+
+
+---
+
+
+
+7. Doodads → Carpet Configuration → espaçamento
+
+
+
+- Aumentar levemente a largura dos campos do Direction Grid.
+
+
+
+Objetivo:
+
+
+
+- Melhorar o espaçamento interno.
+
+- Melhorar legibilidade.
+
+- Melhorar posicionamento dos botões e inputs.
+
+
+
+- O aumento deve ser discreto, sem alterar significativamente o layout geral.
+
+
+
+---
+
+
+
+8. XML Panel → Expand XML Panel
+
+
+
+- O comportamento atual está invertido.
+
+
+
+Problema:
+
+
+
+- Ao clicar em "Expand XML Panel", o painel está sendo deslocado para a esquerda (<).
+
+
+
+Comportamento esperado:
+
+
+
+- O painel XML deve expandir para a direita (>).
+
+
+
+- O objetivo é:
+
+  - liberar mais espaço para o painel central
+
+  - manter uma experiência mais natural de redimensionamento
+
+
+
+- O painel XML deve ocupar a extremidade direita da interface quando expandido.

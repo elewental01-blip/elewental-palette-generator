@@ -11,7 +11,7 @@ import { XmlPreview } from "@/components/XmlPreview";
 import {
   Layers, Image as ImageIcon, Box, BrickWall, Database, Home as HomeIcon,
   Plus, Trash2, ChevronLeft, ChevronRight, Moon, Sun, Sparkles, Settings2,
-  ChevronUp, ChevronDown, Edit3, Eye, FileText, Lock, LogOut,
+  ChevronUp, ChevronDown, Edit3, Eye, FileText, Lock, LogOut, Search,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -502,7 +502,6 @@ function LandingPage({ effectsEnabled, isLoggedIn }: {
         <div className="flex flex-col items-center justify-center pt-14 pb-10 px-8">
           <AnimatedDodecagramIcon size={92} effectsEnabled={effectsEnabled} className="mb-5 drop-shadow-lg" />
           <h1 className="text-4xl font-bold tracking-tight mb-1">Elewental Palette Editor</h1>
-          <p className="text-muted-foreground text-sm tracking-widest font-mono uppercase">EPE — RME Palette Tool</p>
         </div>
 
         {/* Blog feed — posts in order */}
@@ -611,6 +610,9 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(loadAuth);
   const [iconHovered, setIconHovered] = useState(false);
   const [iconTrigger, setIconTrigger] = useState(0);
+  const [helpMode, setHelpMode] = useState(false);
+  const [helpText, setHelpText] = useState<string | null>(null);
+  const [helpPos, setHelpPos] = useState({ x: 0, y: 0 });
 
   const handleLogin = (u: string, p: string): boolean => {
     if (u === ADMIN_USER && p === ADMIN_PASS) {
@@ -635,6 +637,21 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("epe-effects", String(effectsEnabled));
   }, [effectsEnabled]);
+
+  useEffect(() => {
+    if (!helpMode) { setHelpText(null); return; }
+    const onOver = (e: MouseEvent) => {
+      const el = (e.target as Element).closest("[data-help]") as HTMLElement | null;
+      setHelpText(el?.dataset.help ?? null);
+    };
+    const onMove = (e: MouseEvent) => setHelpPos({ x: e.clientX + 14, y: e.clientY + 14 });
+    document.addEventListener("mouseover", onOver);
+    document.addEventListener("mousemove", onMove);
+    return () => {
+      document.removeEventListener("mouseover", onOver);
+      document.removeEventListener("mousemove", onMove);
+    };
+  }, [helpMode]);
 
   const isHome = state.activeCategory === "home";
 
@@ -759,6 +776,19 @@ export default function Home() {
           })}
         </nav>
 
+        <button
+          type="button"
+          onClick={() => setHelpMode((m) => !m)}
+          className={[
+            "w-8 h-8 rounded flex items-center justify-center transition-colors shrink-0",
+            helpMode
+              ? "bg-yellow-400/20 text-yellow-500 border border-yellow-400/30"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent",
+          ].join(" ")}
+          title={helpMode ? "Sair do modo ajuda" : "Modo ajuda — passe o mouse sobre elementos para ver descrições"}
+        >
+          <Search className="w-4 h-4" />
+        </button>
         <StylesMenu
           darkMode={darkMode} onDarkMode={setDarkMode}
           effectsEnabled={effectsEnabled} onEffects={setEffectsEnabled}
@@ -888,6 +918,14 @@ export default function Home() {
           <aside className="w-96 shrink-0">
             <XmlPreview />
           </aside>
+        </div>
+      )}
+      {helpMode && helpText && (
+        <div
+          className="fixed z-[9999] pointer-events-none px-3 py-2 rounded-lg text-xs font-medium shadow-xl border animate-in fade-in duration-100 bg-yellow-100/95 dark:bg-black/85 text-yellow-900 dark:text-white border-yellow-300/60 dark:border-white/10"
+          style={{ left: helpPos.x, top: helpPos.y, maxWidth: 280 }}
+        >
+          {helpText}
         </div>
       )}
     </div>

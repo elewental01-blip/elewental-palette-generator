@@ -34,6 +34,21 @@ function BorderIcon({ dir }: { dir: BorderDirection }) {
 
 // ── Single-ID direction cell ──────────────────────────────────────────────────
 
+const BORDER_HELP: Record<BorderDirection, string> = {
+  n:   "North — border tile for the northern edge of the terrain",
+  s:   "South — border tile for the southern edge of the terrain",
+  e:   "East — border tile for the eastern edge of the terrain",
+  w:   "West — border tile for the western edge of the terrain",
+  cnw: "Inner corner NW — inner north-west corner piece",
+  cne: "Inner corner NE — inner north-east corner piece",
+  csw: "Inner corner SW — inner south-west corner piece",
+  cse: "Inner corner SE — inner south-east corner piece",
+  dnw: "Diagonal NW — diagonal cut for the north-west corner",
+  dne: "Diagonal NE — diagonal cut for the north-east corner",
+  dsw: "Diagonal SW — diagonal cut for the south-west corner",
+  dse: "Diagonal SE — diagonal cut for the south-east corner",
+};
+
 function DirectionCell({ dir, label, value, onUpdate }: {
   dir: BorderDirection;
   label: string;
@@ -76,6 +91,7 @@ function DirectionCell({ dir, label, value, onUpdate }: {
         hasValue ? "border-primary/50 bg-card" : "border-border/40 bg-card/60",
       ].join(" ")}
       data-testid={`border-cell-${dir}`}
+      data-help={BORDER_HELP[dir]}
     >
       {/* Header */}
       <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-border/30 bg-muted/30">

@@ -213,37 +213,40 @@ function Composite3DGrid({ tiles, onChange }: {
   // Z layers to render: active + occupied ones within ±Z3D_VISIBLE range
   // Sorted descending so highest Z (SE / behind) is rendered first
   const renderLayers = [...new Set([activeZ, ...occupiedZ.filter((z) => Math.abs(z - activeZ) <= Z3D_VISIBLE)])]
-    .sort((a, b) => b - a);
+    .sort((a, b) => {
+      const da = Math.abs(a - activeZ);
+      const db = Math.abs(b - activeZ);
+      return db - da || b - a; // furthest first → rendered in background
+    });
 
-  const dzValues = renderLayers.map((z) => z - activeZ);
-  // lower Z → north-west; higher Z → south-east
-  const maxNegDz = Math.abs(Math.min(0, ...dzValues)); // NW layers need left/top padding
-  const maxPosDz = Math.max(0, ...dzValues);           // SE layers need right/bottom padding
+  // All background layers project south-east (shadow-stack effect)
+  const maxAbsDz = Math.max(0, ...renderLayers.map((z) => Math.abs(z - activeZ)));
 
   // renderStack accepts a cell size so dialog can use larger cells
   const renderStack = (cell: number) => {
     const gridW      = size * cell + (size - 1) * 2;
-    const containerW = gridW + (maxNegDz + maxPosDz) * Z3D_STEP_X + 24;
-    const containerH = size * cell + (size - 1) * 2 + (maxNegDz + maxPosDz) * Z3D_STEP_Y + 24;
-    const baseLeft   = maxNegDz * Z3D_STEP_X + 12; // offset for NW (negative dz) layers
-    const baseTop    = maxNegDz * Z3D_STEP_Y + 12;
+    const containerW = gridW + maxAbsDz * Z3D_STEP_X + 24;
+    const containerH = size * cell + (size - 1) * 2 + maxAbsDz * Z3D_STEP_Y + 24;
+    const baseLeft   = 12; // active layer always at origin
+    const baseTop    = 12;
 
     return (
       <div className="overflow-auto">
         <div style={{ position: "relative", width: containerW, height: containerH }}>
           {renderLayers.map((z) => {
             const dz = z - activeZ;
+            const adz = Math.abs(dz);
             const isActive = dz === 0;
-            // lower Z (negative dz) → north-west; higher Z (positive dz) → south-east
-            const left = baseLeft + dz * Z3D_STEP_X;
-            const top  = baseTop  + dz * Z3D_STEP_Y;
-            const opacity = isActive ? 1 : Math.max(0.3, 0.78 - Math.abs(dz) * 0.14);
+            // all background layers project south-east (shadow-stack)
+            const left = baseLeft + adz * Z3D_STEP_X;
+            const top  = baseTop  + adz * Z3D_STEP_Y;
+            const opacity = isActive ? 1 : Math.max(0.25, 0.72 - adz * 0.15);
             const layerTiles = tilesOnZ(z);
 
             return (
               <div key={z} style={{
                 position: "absolute", left, top,
-                zIndex: isActive ? 30 : 10 + Math.max(0, -dz), // NW (lower Z) layers in front
+                zIndex: isActive ? 30 : Math.max(5, 20 - adz * 4),
                 opacity,
                 pointerEvents: isActive ? "auto" : "none",
                 transition: "opacity 0.15s",
@@ -330,7 +333,7 @@ function Composite3DGrid({ tiles, onChange }: {
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-muted-foreground">
-        Perspectiva 45° — Z negativo flutua <span className="text-orange-400 font-medium">noroeste</span> · Z positivo afunda sudeste · clique para adicionar/editar
+        Projeção SE — camadas fora do Z ativo projetam-se <span className="text-orange-400 font-medium">sudeste</span> · Z negativo = superior · Z positivo = inferior · clique para adicionar
       </p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
@@ -440,7 +443,7 @@ export function DoodadEditor() {
   const addElement = (type: "simple" | "composite" | "composite3d") => {
     const n = [...activeItem.elements];
     if (type === "simple")        n.push({ type: "simple", id: 0, chance: 10 });
-    else if (type === "composite") n.push({ type: "composite", chance: 10, tiles: [{ x: 0, y: 0, itemId: 0 }, { x: 1, y: 0, itemId: 0 }] });
+    else if (type === "composite") n.push({ type: "composite", chance: 10, tiles: [] });
     else                           n.push({ type: "composite3d", chance: 10, tiles: [{ x: 0, y: 0, z: 0, itemId: 0 }] });
     updateElements(n);
   };

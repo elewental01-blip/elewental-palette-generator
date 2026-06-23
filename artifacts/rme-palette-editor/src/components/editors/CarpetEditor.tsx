@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { useEditor } from "@/lib/context";
 import { CarpetItem, CarpetAlignDirection, CarpetAlignData } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -57,11 +58,29 @@ function CarpetCell({
   const hasData = !!data;
   const isSingle = data?.type === "single";
   const isMulti  = data?.type === "multi";
+  const singleId = isSingle ? (data as { type: "single"; id: number }).id : 0;
+  const showBadge = isSingle && singleId > 0;
 
-  const activate = () => onChange({ type: "single", id: 0 });
-  const deactivate = () => onChange(undefined);
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) {
+      setInputVal(singleId > 0 ? String(singleId) : "");
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [editing]);
+
+  const commitSingle = () => {
+    const parsed = parseInt(inputVal);
+    if (!isNaN(parsed) && parsed > 0) onChange({ type: "single", id: parsed });
+    setEditing(false);
+  };
+
+  const deactivate = () => { onChange(undefined); setEditing(false); };
   const setMode = (mode: "single" | "multi") => {
-    if (mode === "single") onChange({ type: "single", id: 0 });
+    if (mode === "single") { onChange({ type: "single", id: singleId || 0 }); setEditing(true); }
     else onChange({ type: "multi", items: [] });
   };
 
@@ -111,25 +130,7 @@ function CarpetCell({
       </div>
 
       {/* Body */}
-      {!hasData ? (
-        <button
-          type="button"
-          onClick={activate}
-          className="flex items-center justify-center gap-1 px-2 py-3 text-[11px] text-muted-foreground/50 hover:text-primary hover:bg-muted/20 transition-colors w-full"
-        >
-          <Plus className="w-3 h-3" /> add
-        </button>
-      ) : isSingle ? (
-        <div className="px-2 py-2">
-          <Input
-            type="number"
-            placeholder="Item ID"
-            value={(data as { type: "single"; id: number }).id || ""}
-            onChange={(e) => onChange({ type: "single", id: parseInt(e.target.value) || 0 })}
-            className="h-6 text-[11px] px-1.5"
-          />
-        </div>
-      ) : (
+      {isMulti ? (
         <div className="px-2 py-1.5 space-y-1">
           {(data as { type: "multi"; items: { id: number; chance: number }[] }).items.map((item, idx) => (
             <div key={idx} className="flex gap-1 items-center">
@@ -178,6 +179,38 @@ function CarpetCell({
             <Plus className="w-3 h-3" /> item
           </button>
         </div>
+      ) : showBadge && !editing ? (
+        /* Value badge — double-click to edit */
+        <div className="px-2 py-2">
+          <div
+            className="flex items-center gap-1 bg-primary/10 border border-primary/30 rounded px-2 py-0.5 cursor-pointer group"
+            onDoubleClick={() => setEditing(true)}
+            title="Double-click to edit"
+          >
+            <span className="text-xs font-mono font-semibold text-primary">{singleId}</span>
+            <button
+              type="button"
+              onClick={deactivate}
+              className="text-primary/60 hover:text-destructive transition-colors rounded-full"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Empty or editing: input shown directly — saves on blur */
+        <div className="px-2 py-2">
+          <Input
+            ref={inputRef}
+            type="number"
+            placeholder="Item ID"
+            value={inputVal}
+            onChange={(e) => setInputVal(e.target.value)}
+            onFocus={() => setEditing(true)}
+            onBlur={commitSingle}
+            className="h-6 text-[11px] px-1.5"
+          />
+        </div>
       )}
     </div>
   );
@@ -213,11 +246,11 @@ export function CarpetEditor() {
     | { type: "empty" };
 
   const layout: CellDef[] = [
-    { type: "dir", dir: "cse",    label: "CSE" },    { type: "empty" }, { type: "dir", dir: "n",      label: "S" },      { type: "empty" }, { type: "dir", dir: "csw",    label: "CSW" },
+    { type: "dir", dir: "cse",    label: "CSE" },    { type: "empty" }, { type: "dir", dir: "s",      label: "S" },      { type: "empty" }, { type: "dir", dir: "csw",    label: "CSW" },
     { type: "dir", dir: "dse",    label: "DSE" },    { type: "empty" }, { type: "empty" },                                { type: "empty" }, { type: "dir", dir: "dsw",    label: "DSW" },
     { type: "empty" },                               { type: "dir", dir: "e",      label: "E" },      { type: "dir", dir: "center", label: "CTR" }, { type: "dir", dir: "w",      label: "W" }, { type: "empty" },
     { type: "dir", dir: "dne",    label: "DNE" },    { type: "empty" }, { type: "empty" },                                { type: "empty" }, { type: "dir", dir: "dnw",    label: "DNW" },
-    { type: "dir", dir: "cne",    label: "CNE" },    { type: "empty" }, { type: "dir", dir: "s",      label: "N" },      { type: "empty" }, { type: "dir", dir: "cnw",    label: "CNW" },
+    { type: "dir", dir: "cne",    label: "CNE" },    { type: "empty" }, { type: "dir", dir: "n",      label: "N" },      { type: "empty" }, { type: "dir", dir: "cnw",    label: "CNW" },
   ];
 
   const activeCount = Object.keys(activeItem.carpets).length;
@@ -277,7 +310,7 @@ export function CarpetEditor() {
         </div>
 
         <div className="bg-sidebar rounded-xl border border-sidebar-border p-5">
-          <div className="grid grid-cols-5 gap-2 max-w-3xl mx-auto">
+          <div className="grid grid-cols-5 gap-3 max-w-3xl mx-auto">
             {layout.map((cell, i) => {
               if (cell.type === "empty") return <div key={`e-${i}`} />;
               return (

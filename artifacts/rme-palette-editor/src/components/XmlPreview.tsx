@@ -55,7 +55,7 @@ export function XmlPreview() {
     return (
       <div className="flex flex-col h-full bg-sidebar border-l border-sidebar-border w-10 shrink-0 items-center py-2 gap-1">
         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCollapsed(false)} title="Expand XML panel">
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4" />
         </Button>
         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleCopy} title="Copy to Clipboard" data-testid="button-copy-xml">
           <Copy className="w-4 h-4" />
@@ -82,7 +82,7 @@ export function XmlPreview() {
             <Download className="w-4 h-4" />
           </Button>
           <Button variant="ghost" size="icon" onClick={() => setCollapsed(true)} title="Collapse XML panel" data-testid="button-collapse-xml">
-            <ChevronRight className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" />
           </Button>
         </div>
       </div>
