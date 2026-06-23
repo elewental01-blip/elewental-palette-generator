@@ -934,7 +934,7 @@ export default function Home() {
           </main>
 
           {/* ── XML Preview ── */}
-          <aside className="w-96 shrink-0">
+          <aside className="shrink-0 flex flex-col">
             <XmlPreview />
           </aside>
         </div>

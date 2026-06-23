@@ -1,0 +1,373 @@
+1. Composite 3D → bloqueio real de caracteres
+
+
+
+
+
+
+
+- Continua sendo possível digitar letras nos campos do Tile Layout.
+
+
+
+
+
+
+
+- O comportamento atual apenas impede o uso posterior do valor, mas ainda permite que caracteres inválidos sejam digitados.
+
+
+
+
+
+
+
+- Isso não é o comportamento desejado.
+
+
+
+
+
+
+
+- Os campos devem aceitar exclusivamente números.
+
+
+
+
+
+
+
+Aplicação:
+
+
+
+
+
+
+
+- Composite
+
+
+
+- Composite 3D
+
+
+
+- Doodads → Tile Layout
+
+
+
+- Qualquer outro Tile Layout existente no sistema
+
+
+
+
+
+
+
+Comportamento esperado:
+
+
+
+
+
+
+
+- Ao pressionar uma tecla inválida:
+
+
+
+  - o caractere não deve ser inserido no campo
+
+
+
+
+
+
+
+Bloquear:
+
+
+
+
+
+
+
+- letras
+
+
+
+- símbolos
+
+
+
+- caracteres especiais
+
+
+
+- espaços
+
+
+
+
+
+
+
+Permitir apenas:
+
+
+
+
+
+
+
+- números válidos
+
+
+
+- sinais necessários para coordenadas negativas (quando aplicável)
+
+
+
+
+
+
+
+Objetivo:
+
+
+
+- O usuário não deve conseguir visualizar caracteres inválidos dentro do campo em nenhum momento.
+
+
+
+
+
+
+
+---
+
+
+
+
+
+
+
+2. XML Output → comportamento do Collapse
+
+
+
+
+
+
+
+- O ícone do botão agora está correto (>), porém o comportamento ainda está incorreto.
+
+
+
+
+
+
+
+Problema atual:
+
+
+
+
+
+
+
+- O painel XML é recolhido.
+
+
+
+- Porém o painel central não ocupa o espaço liberado.
+
+
+
+- O XML colapsado permanece "reservando" espaço dentro do layout.
+
+
+
+
+
+
+
+Resultado atual:
+
+
+
+
+
+
+
+[ Painel Central ][ XML Colapsado ]
+
+
+
+
+
+
+
+Resultado esperado:
+
+
+
+
+
+
+
+[ Painel Central Expandido............................... ][ > ]
+
+
+
+
+
+
+
+Ou seja:
+
+
+
+
+
+
+
+- Quando o XML Output for colapsado:
+
+
+
+  - o painel central deve expandir automaticamente
+
+
+
+  - ocupar toda a largura que ficou disponível
+
+
+
+  - recalcular o layout da interface
+
+
+
+
+
+
+
+- O painel XML colapsado deve permanecer apenas como uma pequena aba ancorada na extremidade direita da aplicação.
+
+
+
+
+
+
+
+- Não deve continuar ocupando largura invisível.
+
+
+
+
+
+
+
+Objetivo:
+
+
+
+- Aproveitar integralmente o espaço liberado pelo colapso do XML Output.
+
+
+
+- Maximizar a área útil de edição.
+
+
+
+
+
+
+
+3. Composite 3D → ajuste de texto informativo
+
+
+
+
+
+
+
+- Alterar o texto atual:
+
+
+
+
+
+
+
+  Perspectiva 45° — Z negativo = andar acima (noroeste) · Z positivo = andar abaixo (sudeste) · clique para adicionar
+
+
+
+
+
+
+
+- Para:
+
+
+
+
+
+
+
+  Z negativo = andar acima (noroeste) · Z positivo = andar abaixo (sudeste) · clique para adicionar
+
+
+
+
+
+
+
+- Remover apenas o trecho:
+
+
+
+
+
+
+
+  Perspectiva 45°
+
+
+
+
+
+
+
+- Manter o restante do texto exatamente como está.
+
+
+
+5. Composite 3D → área editável da camada ativa
+
+
+
+
+
+
+
+- A pilha visual de camadas está correta e deve ser mantida.
+
+
+
+  - As camadas superiores continuam aparecendo acima.
+
+
+
+  - As camadas inferiores continuam aparecendo abaixo.
+
+
+
+
+
+
+
+- Porém, a área da camada atualmente selecionada deve sempre permanecer visível. Não pode ser sobreposta a area da camada atual.

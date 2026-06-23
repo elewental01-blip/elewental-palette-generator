@@ -81,10 +81,10 @@ function buildGridCells(
           )}
           {isAdd && !tile && (
             <form className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitAdd(x, y); }}>
-              <Input autoFocus type="number" placeholder="ID" value={inputVal}
+              <Input autoFocus type="text" inputMode="numeric" pattern="[0-9]*" placeholder="ID" value={inputVal}
                 onChange={(e) => setInputVal(e.target.value.replace(/[^0-9]/g, ""))}
                 className="h-5 w-full text-[10px] text-center px-0.5"
-                onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); if (e.key === "Escape") cancel(); }} />
+                onKeyDown={(e) => { if (!/^[0-9]$/.test(e.key) && !["Backspace","Delete","ArrowLeft","ArrowRight","Tab","Enter","Escape"].includes(e.key) && !e.metaKey && !e.ctrlKey) e.preventDefault(); if (e.key === "Escape") cancel(); }} />
               <div className="flex gap-0.5 w-full">
                 <button type="submit" className="flex-1 flex items-center justify-center py-0.5 rounded bg-primary text-primary-foreground text-[9px] font-semibold hover:opacity-90">✓</button>
                 <button type="button" onClick={cancel} className="px-1 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground hover:text-foreground"><X className="w-2 h-2" /></button>
@@ -93,10 +93,10 @@ function buildGridCells(
           )}
           {isEdit && tile && (
             <form className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitEdit(x, y); }}>
-              <Input autoFocus type="number" value={inputVal}
+              <Input autoFocus type="text" inputMode="numeric" pattern="[0-9]*" value={inputVal}
                 onChange={(e) => setInputVal(e.target.value.replace(/[^0-9]/g, ""))}
                 className="h-5 w-full text-[10px] text-center px-0.5"
-                onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); if (e.key === "Escape") cancel(); }} />
+                onKeyDown={(e) => { if (!/^[0-9]$/.test(e.key) && !["Backspace","Delete","ArrowLeft","ArrowRight","Tab","Enter","Escape"].includes(e.key) && !e.metaKey && !e.ctrlKey) e.preventDefault(); if (e.key === "Escape") cancel(); }} />
               <div className="flex gap-0.5 w-full">
                 <button type="submit" className="flex-1 flex items-center justify-center py-0.5 rounded bg-primary text-primary-foreground text-[9px] font-semibold hover:opacity-90">✓</button>
                 <button type="button" onClick={cancel} className="px-1 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground hover:text-foreground"><X className="w-2 h-2" /></button>
@@ -255,7 +255,7 @@ function Composite3DGrid({ tiles, onChange }: {
               <div key={z} style={{
                 position: "absolute", left, top,
                 // Z- (upper floors) in front of active; Z+ (lower floors) behind active
-                zIndex: isActive ? 30 : dz < 0 ? 20 + adz : Math.max(5, 15 - dz),
+                zIndex: isActive ? 100 : dz < 0 ? 20 + adz : Math.max(5, 15 - dz),
                 opacity,
                 pointerEvents: isActive ? "auto" : "none",
                 transition: "opacity 0.15s",
@@ -348,7 +348,7 @@ function Composite3DGrid({ tiles, onChange }: {
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-muted-foreground">
-        Perspectiva 45° — Z negativo = andar <span className="text-blue-400 font-medium">acima</span> (noroeste) · Z positivo = andar <span className="text-orange-400 font-medium">abaixo</span> (sudeste) · clique para adicionar
+        Z negativo = andar <span className="text-blue-400 font-medium">acima</span> (noroeste) · Z positivo = andar <span className="text-orange-400 font-medium">abaixo</span> (sudeste) · clique para adicionar
       </p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
