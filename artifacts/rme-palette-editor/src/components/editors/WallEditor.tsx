@@ -49,10 +49,10 @@ export function WallEditor() {
       <div className="space-y-6 pt-4">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="font-bold">Items</Label>
+            <Label className="font-bold" data-help="Items — tiles que compõem este tipo de muro. Cada item tem ID e chance de aparecimento">Items</Label>
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
               updateWallTypeItem(type, { items: [...wallData.items, { id: 0, chance: 1000 }] });
-            }}>+ Add Item</Button>
+            }} data-help="Add Item — adiciona um tile para este tipo de muro com ID e chance">+ Add Item</Button>
           </div>
           <div className="space-y-2">
             {wallData.items.map((item, idx) => (
@@ -78,10 +78,10 @@ export function WallEditor() {
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="font-bold">Doors</Label>
+            <Label className="font-bold" data-help="Doors — portas embutidas neste segmento de muro. Cada porta tem ID, tipo e estado (aberta/fechada)">Doors</Label>
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
               updateWallTypeItem(type, { doors: [...wallData.doors, { id: 0, type: "normal" }] });
-            }}>+ Add Door</Button>
+            }} data-help="Add Door — adiciona uma porta a este segmento de muro (normal, trancada, quest, etc.)">+ Add Door</Button>
           </div>
           <div className="space-y-2">
             {wallData.doors.map((door, idx) => (
@@ -159,7 +159,7 @@ export function WallEditor() {
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="space-y-2 md:col-span-2">
+          <div className="space-y-2 md:col-span-2" data-help="Brush Name — nome do wall brush. Deve ser único e é usado para referenciar este muro no XML">
             <Label htmlFor="wall-name">Brush Name *</Label>
             <Input
               id="wall-name"
@@ -168,7 +168,7 @@ export function WallEditor() {
               className={!activeItem.name ? "border-destructive focus-visible:ring-destructive" : ""}
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Server LookID — ID do item para identificação visual do muro pelo servidor">
             <Label htmlFor="wall-lookid">Server LookID</Label>
             <Input
               id="wall-lookid"
@@ -177,7 +177,7 @@ export function WallEditor() {
               onChange={(e) => updateField("serverLookId", parseInt(e.target.value) || undefined)}
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Thickness — espessura do muro no formato numerador/denominador (ex: 100/100)">
             <Label htmlFor="wall-thickness">Thickness</Label>
             <Input
               id="wall-thickness"
@@ -186,24 +186,24 @@ export function WallEditor() {
               onChange={(e) => updateField("thickness", e.target.value)}
             />
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2" data-help="Draggable — quando ativado, o muro pode ser arrastado no mapa pelo jogador">
             <Checkbox id="wall-draggable" checked={activeItem.draggable ?? true} onCheckedChange={(c) => updateField("draggable", !!c)} />
             <Label htmlFor="wall-draggable" className="font-normal cursor-pointer">Draggable</Label>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2" data-help="On Blocking — quando ativado, o muro bloqueia passagem mesmo sobre tiles blocantes">
             <Checkbox id="wall-onblocking" checked={activeItem.onBlocking ?? false} onCheckedChange={(c) => updateField("onBlocking", !!c)} />
             <Label htmlFor="wall-onblocking" className="font-normal cursor-pointer">On Blocking</Label>
           </div>
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden" data-help="Wall Types — configure os tiles para cada orientação do muro: Horizontal, Vertical, Corner (canto) e Pole (pilar)">
         <Tabs defaultValue="horizontal" className="w-full">
           <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent h-12 p-0 px-2">
-            <TabsTrigger value="horizontal" className="data-[state=active]:bg-muted/50 rounded-none h-full px-6">Horizontal</TabsTrigger>
-            <TabsTrigger value="vertical" className="data-[state=active]:bg-muted/50 rounded-none h-full px-6">Vertical</TabsTrigger>
-            <TabsTrigger value="corner" className="data-[state=active]:bg-muted/50 rounded-none h-full px-6">Corner</TabsTrigger>
-            <TabsTrigger value="pole" className="data-[state=active]:bg-muted/50 rounded-none h-full px-6">Pole</TabsTrigger>
+            <TabsTrigger value="horizontal" className="data-[state=active]:bg-muted/50 rounded-none h-full px-6" data-help="Horizontal — tiles do muro em orientação horizontal (lado a lado na direção leste-oeste)">Horizontal</TabsTrigger>
+            <TabsTrigger value="vertical" className="data-[state=active]:bg-muted/50 rounded-none h-full px-6" data-help="Vertical — tiles do muro em orientação vertical (empilhados na direção norte-sul)">Vertical</TabsTrigger>
+            <TabsTrigger value="corner" className="data-[state=active]:bg-muted/50 rounded-none h-full px-6" data-help="Corner — tile de canto onde muros horizontal e vertical se encontram">Corner</TabsTrigger>
+            <TabsTrigger value="pole" className="data-[state=active]:bg-muted/50 rounded-none h-full px-6" data-help="Pole — tile de pilar, segmento de muro isolado sem conexões adjacentes">Pole</TabsTrigger>
           </TabsList>
           <div className="p-4 bg-muted/20">
             <TabsContent value="horizontal" className="mt-0">{renderWallTab("horizontal")}</TabsContent>

@@ -42,6 +42,24 @@ function CarpetIcon({ dir }: { dir: CarpetAlignDirection }) {
   );
 }
 
+// ── Help descriptions per direction ─────────────────────────────────────────
+
+const CARPET_HELP: Record<CarpetAlignDirection, string> = {
+  n:      "Norte — tile para a borda norte do tapete",
+  s:      "Sul — tile para a borda sul do tapete",
+  e:      "Leste — tile para a borda leste do tapete",
+  w:      "Oeste — tile para a borda oeste do tapete",
+  cnw:    "Canto interno NW — peça de canto noroeste côncavo do tapete",
+  cne:    "Canto interno NE — peça de canto nordeste côncavo do tapete",
+  csw:    "Canto interno SW — peça de canto sudoeste côncavo do tapete",
+  cse:    "Canto interno SE — peça de canto sudeste côncavo do tapete",
+  dnw:    "Diagonal NW — corte diagonal do canto noroeste do tapete",
+  dne:    "Diagonal NE — corte diagonal do canto nordeste do tapete",
+  dsw:    "Diagonal SW — corte diagonal do canto sudoeste do tapete",
+  dse:    "Diagonal SE — corte diagonal do canto sudeste do tapete",
+  center: "Centro — tile central do tapete (posição 0,0 do padrão)",
+};
+
 // ── Carpet direction cell ────────────────────────────────────────────────────
 
 function CarpetCell({
@@ -90,6 +108,7 @@ function CarpetCell({
         "flex flex-col rounded-lg border overflow-hidden transition-colors",
         hasData ? "border-primary/50 bg-card" : "border-border/30 bg-card/50",
       ].join(" ")}
+      data-help={CARPET_HELP[dir]}
     >
       {/* Header */}
       <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-border/20 bg-muted/20">
@@ -269,7 +288,7 @@ export function CarpetEditor() {
         )}
 
         <div className="grid grid-cols-3 gap-6">
-          <div className="space-y-2 col-span-2">
+          <div className="space-y-2 col-span-2" data-help="Brush Name — nome do carpet brush usado pelo RME. Deve ser único no arquivo de paletas">
             <Label htmlFor="carpet-name">Brush Name *</Label>
             <Input
               id="carpet-name"
@@ -278,7 +297,7 @@ export function CarpetEditor() {
               className={!activeItem.name ? "border-destructive" : ""}
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Server LookID — ID do item para identificação visual do tapete pelo servidor">
             <Label htmlFor="carpet-lookid">Server LookID</Label>
             <Input
               id="carpet-lookid"
@@ -294,7 +313,7 @@ export function CarpetEditor() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold">Direction Grid</h2>
+            <h2 className="text-xl font-bold" data-help="Direction Grid — grade visual com 13 posições do tapete: centro, bordas cardinais, cantos côncavos e cortes diagonais">Direction Grid</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Click "+ add" in any cell to activate it. Toggle <strong>S</strong> (single ID) or <strong>M</strong> (multiple items with chance).
             </p>
@@ -303,7 +322,8 @@ export function CarpetEditor() {
             {activeCount > 0 && (
               <span className="text-xs text-muted-foreground">{activeCount} direction{activeCount !== 1 ? "s" : ""} active</span>
             )}
-            <Button variant="outline" size="sm" onClick={() => updateField("carpets", {})}>
+            <Button variant="outline" size="sm" onClick={() => updateField("carpets", {})}
+              data-help="Clear All — remove todos os tiles de direção deste tapete, esvaziando o Direction Grid">
               Clear All
             </Button>
           </div>

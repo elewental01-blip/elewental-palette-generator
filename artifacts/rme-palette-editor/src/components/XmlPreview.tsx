@@ -54,13 +54,16 @@ export function XmlPreview() {
   if (collapsed) {
     return (
       <div className="flex flex-col h-full bg-sidebar border-l border-sidebar-border w-10 shrink-0 items-center py-2 gap-1">
-        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCollapsed(false)} title="Expand XML panel">
-          <ChevronRight className="w-4 h-4" />
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCollapsed(false)} title="Expand XML panel"
+          data-help="XML Output — clique para expandir o painel de saída XML">
+          <ChevronLeft className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleCopy} title="Copy to Clipboard" data-testid="button-copy-xml">
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleCopy} title="Copy to Clipboard" data-testid="button-copy-xml"
+          data-help="Copiar XML — copia o conteúdo XML para a área de transferência">
           <Copy className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleDownload} title="Download XML" data-testid="button-download-xml">
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleDownload} title="Download XML" data-testid="button-download-xml"
+          data-help="Baixar XML — salva o XML como arquivo .xml">
           <Download className="w-4 h-4" />
         </Button>
       </div>
@@ -68,21 +71,25 @@ export function XmlPreview() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-sidebar border-l border-sidebar-border w-96 shrink-0">
+    <div className="flex flex-col h-full bg-sidebar border-l border-sidebar-border w-96 shrink-0"
+      data-help="XML Output — painel com o XML gerado a partir das configurações do editor atual">
       <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
         <h3 className="font-semibold text-sidebar-foreground flex items-center gap-2">
           <CodeXml className="w-4 h-4 text-primary" />
           XML Output
         </h3>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={handleCopy} title="Copy to Clipboard" data-testid="button-copy-xml">
+          <Button variant="ghost" size="icon" onClick={handleCopy} title="Copy to Clipboard" data-testid="button-copy-xml"
+            data-help="Copiar XML — copia todo o conteúdo XML gerado para a área de transferência">
             <Copy className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleDownload} title="Download XML" data-testid="button-download-xml">
+          <Button variant="ghost" size="icon" onClick={handleDownload} title="Download XML" data-testid="button-download-xml"
+            data-help="Baixar XML — salva o XML gerado como arquivo .xml no computador">
             <Download className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setCollapsed(true)} title="Collapse XML panel" data-testid="button-collapse-xml">
-            <ChevronLeft className="w-4 h-4" />
+          <Button variant="ghost" size="icon" onClick={() => setCollapsed(true)} title="Collapse XML panel" data-testid="button-collapse-xml"
+            data-help="Recolher painel — minimiza o XML Output para a borda direita da tela">
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       </div>

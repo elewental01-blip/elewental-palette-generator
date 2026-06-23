@@ -1,0 +1,135 @@
+2. Help Mode → cobertura completa do sistema
+
+- O Help Mode deve fornecer ajuda contextual para praticamente todos os elementos da interface.
+
+- Aplicar em:
+  - botões
+  - campos de digitação
+  - títulos
+  - subtítulos
+  - labels
+  - checkboxes
+  - selects
+  - ícones
+  - painéis
+  - grids
+  - seções
+  - menus
+
+- Nenhum elemento importante da interface deve ficar sem descrição.
+
+- Mesmo que a descrição seja simples, ela deve existir.
+
+Exemplo:
+
+Botão:
++ Simple
+
+Descrição:
+"Cria um doodad simples utilizando posicionamento por ID."
+
+- O texto exibido deve ser específico para a função real de cada elemento.
+
+- Evitar descrições genéricas repetidas.
+
+- A cobertura deve ser praticamente total no sistema inteiro, incluindo:
+  - menus principais
+  - submenus
+  - configurações
+  - campos de XML
+  - grids
+  - componentes de edição
+  - controles de navegação
+
+Objetivo:
+- Permitir que novos usuários entendam completamente o funcionamento do editor apenas utilizando o Help Mode.
+
+---
+
+3. XML Output → correção definitiva do botão Collapse
+
+- O comportamento do botão continua invertido.
+
+Problema atual:
+
+- O botão possui ícone "<".
+- Ao clicar, o XML Output continua colapsando para a esquerda.
+
+Comportamento esperado:
+
+- O XML Output está localizado na lateral direita da interface.
+
+- Ao clicar em "Collapse":
+  - o painel XML deve recolher para a direita (>)
+  - permanecendo ancorado na extremidade direita da tela
+
+Resultado esperado:
+
+- O painel central ganha mais espaço horizontal.
+- O XML Output fica minimizado junto à borda direita da interface.
+
+- Corrigir:
+  - direção visual da animação
+  - lógica de posicionamento final
+  - comportamento do botão
+  - comportamento do painel
+
+- O efeito final deve ser equivalente a "empurrar" o XML Output para fora da área útil da interface pela direita, e não pela esquerda.
+
+---
+
+4. Tile Layout 3D → visibilidade das camadas
+
+- As camadas transparentes superiores e inferiores continuam excessivamente transparentes.
+
+- Ajuste necessário:
+  - aumentar significativamente a visibilidade dessas camadas
+  - tornar os contornos mais evidentes
+  - tornar a estrutura de empilhamento facilmente identificável
+
+- O usuário deve conseguir visualizar claramente:
+  - a camada ativa
+  - as camadas acima
+  - as camadas abaixo
+
+- A diferença de opacidade deve existir, mas sem comprometer a leitura visual.
+
+---
+
+5. Composite / Composite 3D → botão Expand
+
+- O botão "Expand" ainda está abrindo uma janela reduzida.
+
+- Comportamento esperado:
+
+  - Abrir uma janela em modo tela cheia (fullscreen workspace).
+
+  - A área expandida deve ocupar praticamente toda a área disponível do aplicativo.
+
+- Objetivo:
+  - fornecer espaço adequado para edição de layouts grandes
+  - melhorar visualização de ranges amplos
+  - melhorar edição de múltiplas camadas Z
+
+- A janela expandida deve funcionar como um workspace dedicado para o Tile Layout.
+
+---
+
+6. Tile Layout → bloqueio de letras nos campos
+
+- Atualmente ainda é possível digitar letras nos campos do Tile Layout.
+
+- Embora os valores inválidos não sejam adicionados, a digitação ainda está sendo permitida.
+
+- Comportamento esperado:
+
+  - O campo deve aceitar exclusivamente números.
+
+- Durante a digitação:
+  - bloquear letras
+  - bloquear caracteres especiais
+  - bloquear qualquer entrada não numérica
+
+- A validação deve ocorrer diretamente no input, antes do valor entrar no campo.
+
+- O usuário não deve conseguir sequer inserir caracteres inválidos temporariamente.

@@ -56,7 +56,7 @@ export function GroundEditor() {
         )}
 
         <div className="grid grid-cols-3 gap-6">
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Brush Name — nome do ground brush usado pelo RME. Deve ser único e é referenciado por bordas e friends">
             <Label htmlFor="ground-name">Brush Name *</Label>
             <Input
               id="ground-name"
@@ -65,7 +65,7 @@ export function GroundEditor() {
               className={!activeItem.name ? "border-destructive focus-visible:ring-destructive" : ""}
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Server LookID — ID do item usado pelo servidor para identificar visualmente este ground">
             <Label htmlFor="ground-lookid">Server LookID</Label>
             <Input
               id="ground-lookid"
@@ -75,7 +75,7 @@ export function GroundEditor() {
               onChange={(e) => updateField("serverLookId", e.target.value === "" ? undefined : parseInt(e.target.value) || 0)}
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Z-Order — ordem de renderização do ground. Valores menores são desenhados antes (ficam embaixo)">
             <Label htmlFor="ground-zorder">Z-Order</Label>
             <Input
               id="ground-zorder"
@@ -92,8 +92,8 @@ export function GroundEditor() {
         {/* Items */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Items</h3>
-            <Button size="sm" variant="outline" onClick={addItem}><Plus className="w-4 h-4 mr-1"/> Add Item</Button>
+            <h3 className="font-semibold" data-help="Items — lista de tiles que compõem este ground brush. Cada item tem ID e chance de aparecer">Items</h3>
+            <Button size="sm" variant="outline" onClick={addItem} data-help="Add Item — adiciona um novo tile ao ground brush com ID e probabilidade de aparecimento"><Plus className="w-4 h-4 mr-1"/> Add Item</Button>
           </div>
           <div className="space-y-2">
             {activeItem.items.map((item, idx) => (
@@ -120,8 +120,8 @@ export function GroundEditor() {
         {/* Friends */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Friends</h3>
-            <Button size="sm" variant="outline" onClick={addFriend}><Plus className="w-4 h-4 mr-1"/> Add Friend</Button>
+            <h3 className="font-semibold" data-help="Friends — outros brush names que este ground brush trata como compatíveis para geração de bordas">Friends</h3>
+            <Button size="sm" variant="outline" onClick={addFriend} data-help="Add Friend — adiciona um brush compatível. Grounds friends não geram bordas entre si"><Plus className="w-4 h-4 mr-1"/> Add Friend</Button>
           </div>
           <div className="space-y-2">
             {activeItem.friends.map((friend, idx) => (
@@ -143,8 +143,8 @@ export function GroundEditor() {
         {/* Borders */}
         <div className="col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Borders</h3>
-            <Button size="sm" variant="outline" onClick={addBorder}><Plus className="w-4 h-4 mr-1"/> Add Border</Button>
+            <h3 className="font-semibold" data-help="Borders — bordas aplicadas automaticamente quando este ground encontra outro terrain. Define align (outer/inner), destino e ID da borda">Borders</h3>
+            <Button size="sm" variant="outline" onClick={addBorder} data-help="Add Border — adiciona uma regra de borda automática para transições com outros grounds"><Plus className="w-4 h-4 mr-1"/> Add Border</Button>
           </div>
           <div className="space-y-2">
             {activeItem.borders.map((border, idx) => (

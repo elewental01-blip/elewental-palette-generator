@@ -87,7 +87,7 @@ export function TilesetEditor() {
           </Alert>
         )}
 
-        <div className="space-y-2 max-w-xs">
+        <div className="space-y-2 max-w-xs" data-help="Tileset Name — nome do tileset que agrupa brushes e itens para exibição na paleta do RME">
           <Label htmlFor="tileset-name">Tileset Name *</Label>
           <Input
             id="tileset-name"
@@ -102,7 +102,7 @@ export function TilesetEditor() {
       {/* Sections */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Sections</h3>
+          <h3 className="font-semibold" data-help="Sections — seções do tileset. Cada seção agrupa entradas por tipo: terrain (grounds/borders), doodad ou raw (IDs e ranges)">Sections</h3>
           <div className="flex gap-2">
             {(["terrain", "doodad", "raw"] as TilesetSectionType[]).map((type) => (
               <Button
@@ -111,6 +111,11 @@ export function TilesetEditor() {
                 variant="outline"
                 className={`capitalize ${SECTION_COLORS[type]}`}
                 onClick={() => addSection(type)}
+                data-help={
+                  type === "terrain" ? "+ terrain — adiciona seção de terrain brushes (grounds e bordas)" :
+                  type === "doodad"  ? "+ doodad — adiciona seção de doodad brushes (objetos decorativos)" :
+                                       "+ raw — adiciona seção raw com IDs diretos e ranges de itens"
+                }
               >
                 + {type}
               </Button>
@@ -233,15 +238,18 @@ export function TilesetEditor() {
                 {/* Add entry row */}
                 <div className="flex gap-2 pt-1">
                   <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => addEntry(si, { kind: "brush", name: "" })}>
+                    onClick={() => addEntry(si, { kind: "brush", name: "" })}
+                    data-help="+ brush — adiciona entrada por nome de brush (ground, doodad ou wall brush)">
                     <Plus className="w-3 h-3 mr-1" /> brush
                   </Button>
                   <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => addEntry(si, { kind: "item", id: 0 })}>
+                    onClick={() => addEntry(si, { kind: "item", id: 0 })}
+                    data-help="+ item — adiciona entrada por ID de item individual">
                     <Plus className="w-3 h-3 mr-1" /> item
                   </Button>
                   <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => addEntry(si, { kind: "range", fromid: 0, toid: 0 })}>
+                    onClick={() => addEntry(si, { kind: "range", fromid: 0, toid: 0 })}
+                    data-help="+ range — adiciona faixa de IDs contínuos (fromid até toid) ao tileset">
                     <Plus className="w-3 h-3 mr-1" /> range
                   </Button>
                 </div>

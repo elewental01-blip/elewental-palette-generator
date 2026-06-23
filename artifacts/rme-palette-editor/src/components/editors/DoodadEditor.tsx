@@ -81,7 +81,8 @@ function buildGridCells(
           )}
           {isAdd && !tile && (
             <form className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitAdd(x, y); }}>
-              <Input autoFocus type="number" placeholder="ID" value={inputVal} onChange={(e) => setInputVal(e.target.value)}
+              <Input autoFocus type="number" placeholder="ID" value={inputVal}
+                onChange={(e) => setInputVal(e.target.value.replace(/[^0-9]/g, ""))}
                 className="h-5 w-full text-[10px] text-center px-0.5"
                 onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); if (e.key === "Escape") cancel(); }} />
               <div className="flex gap-0.5 w-full">
@@ -92,7 +93,8 @@ function buildGridCells(
           )}
           {isEdit && tile && (
             <form className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); commitEdit(x, y); }}>
-              <Input autoFocus type="number" value={inputVal} onChange={(e) => setInputVal(e.target.value)}
+              <Input autoFocus type="number" value={inputVal}
+                onChange={(e) => setInputVal(e.target.value.replace(/[^0-9]/g, ""))}
                 className="h-5 w-full text-[10px] text-center px-0.5"
                 onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); if (e.key === "Escape") cancel(); }} />
               <div className="flex gap-0.5 w-full">
@@ -144,7 +146,8 @@ function CompositeTileGrid({ tiles, onChange }: { tiles: { x: number; y: number;
             ±{r}
           </button>
         ))}
-        <Button size="sm" variant="ghost" className="ml-auto h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => setDialog(true)}>
+        <Button size="sm" variant="ghost" className="ml-auto h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => setDialog(true)}
+          data-help="Expand — abre o Tile Layout em modo tela cheia para edição com mais espaço">
           <ExternalLink className="w-3 h-3" /> Expand
         </Button>
       </div>
@@ -154,21 +157,25 @@ function CompositeTileGrid({ tiles, onChange }: { tiles: { x: number; y: number;
         </div>
       </div>
       <Dialog open={dialogOpen} onOpenChange={(open) => { setDialog(open); if (!open) cancel(); }}>
-        <DialogContent className="w-fit max-w-[98vw] max-h-[96vh] overflow-auto">
-          <DialogHeader><DialogTitle>Tile Layout — ±{range} grid (X/Y)</DialogTitle></DialogHeader>
-          <div className="flex items-center gap-1.5 flex-wrap mb-2">
-            <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
-            {RANGE_OPTIONS.map((r) => (
-              <button key={r} type="button" onClick={() => setRange(r)}
-                className={["px-2 py-0.5 text-xs rounded border transition-colors", range === r ? "bg-primary/20 border-primary text-primary font-semibold" : "border-border/40 text-muted-foreground hover:border-border hover:text-foreground"].join(" ")}>
-                ±{r}
-              </button>
-            ))}
-          </div>
-          <div className="overflow-auto">
-            <div className="inline-grid gap-1 rounded-lg border border-border/50 bg-sidebar p-2"
-              style={{ gridTemplateColumns: `repeat(${size}, ${DIALOG_CELL_SIZE[range]}px)` }}>
-              {buildGridCells(size, gridMin, DIALOG_CELL_SIZE[range], tileAt, addingCell, editingCell, inputVal, setInputVal, startAdd, startEdit, commitAdd, commitEdit, removeTile, cancel)}
+        <DialogContent className="flex flex-col p-0 rounded-none" style={{ width: "100vw", height: "100vh", maxWidth: "100vw", maxHeight: "100vh" }}>
+          <DialogHeader className="p-4 pb-3 shrink-0 border-b border-border">
+            <DialogTitle>Tile Layout — ±{range} grid (X/Y)</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto p-4">
+            <div className="flex items-center gap-1.5 flex-wrap mb-4">
+              <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
+              {RANGE_OPTIONS.map((r) => (
+                <button key={r} type="button" onClick={() => setRange(r)}
+                  className={["px-2 py-0.5 text-xs rounded border transition-colors", range === r ? "bg-primary/20 border-primary text-primary font-semibold" : "border-border/40 text-muted-foreground hover:border-border hover:text-foreground"].join(" ")}>
+                  ±{r}
+                </button>
+              ))}
+            </div>
+            <div className="overflow-auto">
+              <div className="inline-grid gap-1 rounded-lg border border-border/50 bg-sidebar p-2"
+                style={{ gridTemplateColumns: `repeat(${size}, ${DIALOG_CELL_SIZE[range]}px)` }}>
+                {buildGridCells(size, gridMin, DIALOG_CELL_SIZE[range], tileAt, addingCell, editingCell, inputVal, setInputVal, startAdd, startEdit, commitAdd, commitEdit, removeTile, cancel)}
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -241,8 +248,8 @@ function Composite3DGrid({ tiles, onChange }: {
             // Z- (negative) → north-west (upper floors); Z+ (positive) → south-east (lower floors)
             const left = baseLeft + dz * Z3D_STEP_X;
             const top  = baseTop  + dz * Z3D_STEP_Y;
-            // Keep layers clearly visible — minimum 45% opacity
-            const opacity = isActive ? 1 : Math.max(0.45, 0.88 - adz * 0.12);
+            // Keep layers clearly visible — minimum 78% opacity
+            const opacity = isActive ? 1 : Math.max(0.78, 1 - adz * 0.07);
             const layerTiles = tilesOnZ(z);
 
             return (
@@ -274,7 +281,7 @@ function Composite3DGrid({ tiles, onChange }: {
                     )}
                   </div>
                 ) : (
-                  <div className="inline-grid gap-0.5 rounded-lg border border-border/50 bg-sidebar/70 p-1.5"
+                  <div className="inline-grid gap-0.5 rounded-lg border-2 border-border/70 bg-sidebar p-1.5"
                     style={{ gridTemplateColumns: `repeat(${size}, ${cell}px)` }}>
                     {Array.from({ length: size }).map((_, rowIdx) =>
                       Array.from({ length: size }).map((_, colIdx) => {
@@ -285,9 +292,9 @@ function Composite3DGrid({ tiles, onChange }: {
                         return (
                           <div key={`${x}-${y}`}
                             className={["rounded border flex items-center justify-center",
-                              hasTile ? "bg-primary/25 border-primary/50"
-                              : isOrigin ? "bg-orange-500/10 border-orange-500/30"
-                              : "bg-muted/8 border-border/25",
+                              hasTile ? "bg-primary/40 border-primary/70"
+                              : isOrigin ? "bg-orange-500/20 border-orange-500/50"
+                              : "bg-muted/25 border-border/50",
                             ].join(" ")}
                             style={{ width: cell, height: cell }}>
                             {hasTile && <span className="text-[8px] font-mono text-primary/60">{layerTiles.find((t) => t.x === x && t.y === y)!.itemId}</span>}
@@ -308,23 +315,29 @@ function Composite3DGrid({ tiles, onChange }: {
   const Controls = () => (
     <div className="space-y-1.5 mb-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-muted-foreground font-medium shrink-0">Z layer:</span>
+        <span className="text-xs text-muted-foreground font-medium shrink-0"
+          data-help="Z layer — altitude ativa para edição. Z− = andares acima (noroeste), Z+ = andares abaixo (sudeste)">Z layer:</span>
         <button type="button" onClick={() => setActiveZ((z) => Math.max(Z3D_MIN, z - 1))} disabled={activeZ === Z3D_MIN}
-          className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors">−</button>
-        <span className="font-mono text-xs min-w-[3.5rem] text-center bg-muted/40 border border-orange-500/30 rounded px-2 py-0.5 leading-5 text-orange-400">{zLabel(activeZ)}</span>
+          className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors"
+          data-help="Subir — muda para o andar acima (Z negativo, deslocado para noroeste na perspectiva)">−</button>
+        <span className="font-mono text-xs min-w-[3.5rem] text-center bg-muted/40 border border-orange-500/30 rounded px-2 py-0.5 leading-5 text-orange-400"
+          data-help="Camada Z ativa — camada sendo editada. Tiles adicionados vão para esta altitude">{zLabel(activeZ)}</span>
         <button type="button" onClick={() => setActiveZ((z) => Math.min(Z3D_MAX, z + 1))} disabled={activeZ === Z3D_MAX}
-          className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors">+</button>
+          className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors"
+          data-help="Descer — muda para o andar abaixo (Z positivo, deslocado para sudeste na perspectiva)">+</button>
         <span className="text-[11px] text-muted-foreground">{tilesOnZ(activeZ).length} tile{tilesOnZ(activeZ).length !== 1 ? "s" : ""}</span>
       </div>
       {occupiedZ.length > 0 && (
         <div className="flex items-center gap-1 flex-wrap">
-          <span className="text-[10px] text-muted-foreground/50 shrink-0">Layers:</span>
+          <span className="text-[10px] text-muted-foreground/50 shrink-0"
+            data-help="Layers — camadas Z que possuem tiles. Clique em qualquer camada para navegar diretamente até ela">Layers:</span>
           {occupiedZ.map((z) => (
             <button key={z} type="button" onClick={() => setActiveZ(z)}
               className={["px-1.5 py-0 text-[10px] font-mono rounded border transition-colors leading-5",
                 z === activeZ ? "bg-orange-500/20 border-orange-500/60 text-orange-400 font-bold"
                 : "border-border/40 text-muted-foreground hover:border-primary/50 hover:text-foreground",
-              ].join(" ")}>
+              ].join(" ")}
+              data-help={`Camada ${zLabel(z)} — clique para editar esta camada (${tilesOnZ(z).length} tile${tilesOnZ(z).length !== 1 ? "s" : ""})`}>
               {zLabel(z)} ({tilesOnZ(z).length})
             </button>
           ))}
@@ -346,26 +359,31 @@ function Composite3DGrid({ tiles, onChange }: {
             ±{r}
           </button>
         ))}
-        <Button size="sm" variant="ghost" className="ml-auto h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => setDialog(true)}>
+        <Button size="sm" variant="ghost" className="ml-auto h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground" onClick={() => setDialog(true)}
+          data-help="Expand — abre o Tile Layout 3D em modo tela cheia para editar múltiplas camadas Z com mais espaço">
           <ExternalLink className="w-3 h-3" /> Expand
         </Button>
       </div>
       {Controls()}
       {renderStack(CELL)}
       <Dialog open={dialogOpen} onOpenChange={(open) => { setDialog(open); if (!open) cancel(); }}>
-        <DialogContent className="w-fit max-w-[98vw] max-h-[96vh] overflow-auto">
-          <DialogHeader><DialogTitle>Composite 3D — Tile Layout ({zLabel(activeZ)})</DialogTitle></DialogHeader>
-          {Controls()}
-          <div className="flex items-center gap-1.5 flex-wrap mb-2">
-            <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
-            {RANGE_OPTIONS.map((r) => (
-              <button key={r} type="button" onClick={() => setRange(r)}
-                className={["px-2 py-0.5 text-xs rounded border transition-colors", range === r ? "bg-primary/20 border-primary text-primary font-semibold" : "border-border/40 text-muted-foreground hover:border-border hover:text-foreground"].join(" ")}>
-                ±{r}
-              </button>
-            ))}
+        <DialogContent className="flex flex-col p-0 rounded-none" style={{ width: "100vw", height: "100vh", maxWidth: "100vw", maxHeight: "100vh" }}>
+          <DialogHeader className="p-4 pb-3 shrink-0 border-b border-border">
+            <DialogTitle>Composite 3D — Tile Layout ({zLabel(activeZ)})</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto p-4">
+            {Controls()}
+            <div className="flex items-center gap-1.5 flex-wrap mb-4">
+              <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
+              {RANGE_OPTIONS.map((r) => (
+                <button key={r} type="button" onClick={() => setRange(r)}
+                  className={["px-2 py-0.5 text-xs rounded border transition-colors", range === r ? "bg-primary/20 border-primary text-primary font-semibold" : "border-border/40 text-muted-foreground hover:border-border hover:text-foreground"].join(" ")}>
+                  ±{r}
+                </button>
+              ))}
+            </div>
+            {renderStack(DIALOG_CELL_SIZE[range])}
           </div>
-          {renderStack(DIALOG_CELL_SIZE[range])}
         </DialogContent>
       </Dialog>
     </div>
@@ -476,31 +494,31 @@ export function DoodadEditor() {
           </Alert>
         )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="space-y-2 md:col-span-2">
+          <div className="space-y-2 md:col-span-2" data-help="Nome do brush — identificador textual usado pelo RME para referenciar este doodad no XML">
             <Label htmlFor="doodad-name">Brush Name *</Label>
             <Input id="doodad-name" value={activeItem.name || ""}
               onChange={(e) => updateField("name", e.target.value)}
               className={!activeItem.name ? "border-destructive" : ""}
               data-testid="input-doodad-name" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Server LookID — ID do item usado pelo servidor para identificar a aparência visual deste doodad">
             <Label htmlFor="doodad-lookid">Server LookID</Label>
             <Input id="doodad-lookid" type="number" value={activeItem.serverLookId ?? 0}
               onChange={(e) => updateField("serverLookId", parseInt(e.target.value) || 0)}
               data-testid="input-doodad-lookid" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Thickness — espessura do doodad no formato numerador/denominador (ex: 15/100)">
             <Label htmlFor="doodad-thickness">Thickness</Label>
             <Input id="doodad-thickness" placeholder="e.g. 15/100" value={activeItem.thickness || ""}
               onChange={(e) => updateField("thickness", e.target.value)}
               data-testid="input-doodad-thickness" />
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2" data-help="Draggable — quando ativado, o doodad pode ser arrastado pelo jogador no mapa">
             <Checkbox id="doodad-draggable" checked={activeItem.draggable}
               onCheckedChange={(c) => updateField("draggable", !!c)} />
             <Label htmlFor="doodad-draggable" className="font-normal cursor-pointer">Draggable</Label>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2" data-help="On Blocking — quando ativado, o doodad bloqueia passagem mesmo estando sobre tiles blocantes">
             <Checkbox id="doodad-onblocking" checked={activeItem.onBlocking}
               onCheckedChange={(c) => updateField("onBlocking", !!c)} />
             <Label htmlFor="doodad-onblocking" className="font-normal cursor-pointer">On Blocking</Label>
@@ -510,14 +528,17 @@ export function DoodadEditor() {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Elements</h3>
+          <h3 className="font-semibold" data-help="Elements — lista de elementos visuais que compõem este doodad (Simple, Composite ou Composite 3D)">Elements</h3>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" className="text-blue-400 border-blue-500/40 hover:bg-blue-500/10"
-              onClick={() => addElement("simple")} data-testid="button-add-simple">+ Simple</Button>
+              onClick={() => addElement("simple")} data-testid="button-add-simple"
+              data-help="+ Simple — adiciona um elemento simples com um único tile e chance de aparecimento">+ Simple</Button>
             <Button size="sm" variant="outline" className="text-amber-400 border-amber-500/40 hover:bg-amber-500/10"
-              onClick={() => addElement("composite")} data-testid="button-add-composite">+ Composite</Button>
+              onClick={() => addElement("composite")} data-testid="button-add-composite"
+              data-help="+ Composite — adiciona um elemento composto por múltiplos tiles posicionados em grade X/Y">+ Composite</Button>
             <Button size="sm" variant="outline" className="text-teal-400 border-teal-500/40 hover:bg-teal-500/10"
-              onClick={() => addElement("composite3d")} data-testid="button-add-composite3d">+ Composite 3D</Button>
+              onClick={() => addElement("composite3d")} data-testid="button-add-composite3d"
+              data-help="+ Composite 3D — adiciona um elemento composto em perspectiva isométrica com camadas Z (andares)">+ Composite 3D</Button>
           </div>
         </div>
 

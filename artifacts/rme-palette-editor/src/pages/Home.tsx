@@ -736,6 +736,7 @@ export default function Home() {
             onClick={() => dispatch({ type: "SET_CATEGORY", category: "home" })}
             className="flex items-center gap-2 mr-3 select-none shrink-0 rounded hover:opacity-75 transition-opacity"
             title="Go to Home"
+            data-help="Logo EPE — clique para voltar à página inicial do Elewental Palette Editor"
           >
             <div
               onMouseEnter={() => setIconHovered(true)}
@@ -770,6 +771,15 @@ export default function Home() {
                 className={`gap-2 shrink-0 ${isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
                 onClick={() => dispatch({ type: "SET_CATEGORY", category: cat.id })}
                 data-testid={`tab-${cat.id}`}
+                data-help={
+                  cat.id === "home"     ? "Home — página inicial do EPE com informações e novidades" :
+                  cat.id === "tilesets" ? "Tilesets — agrupe brushes e itens em paletas para o RME" :
+                  cat.id === "grounds"  ? "Grounds — edite terrain brushes com items, borders e friends" :
+                  cat.id === "borders"  ? "Borders — configure as 12 direções de borda de cada terrain" :
+                  cat.id === "doodads"  ? "Doodads / Carpets — edite doodad brushes (Simple, Composite, 3D) e tapetes" :
+                  cat.id === "walls"    ? "Walls — configure muros com tipos horizontal, vertical, corner e pole" :
+                  `Abrir editor de ${cat.label}`
+                }
               >
                 <Icon className="w-4 h-4" />
                 {cat.label}
@@ -788,6 +798,7 @@ export default function Home() {
               : "text-muted-foreground hover:text-foreground hover:bg-accent",
           ].join(" ")}
           title={helpMode ? "Sair do modo ajuda" : "Modo ajuda — passe o mouse sobre elementos para ver descrições"}
+          data-help="Modo Ajuda — quando ativo, passe o mouse sobre qualquer elemento da interface para ver sua descrição"
         >
           <Search className="w-4 h-4" />
         </button>
@@ -815,12 +826,14 @@ export default function Home() {
                       <div className="flex items-center gap-1">
                         <button type="button" onClick={handleCreateDoodad}
                           className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          data-testid="button-create-doodad" title="New doodad">
+                          data-testid="button-create-doodad" title="New doodad"
+                          data-help="Novo Doodad — cria um doodad brush vazio na lista">
                           <Plus className="w-4 h-4" />
                         </button>
                         <button type="button" onClick={() => setSidebarOpen(false)}
                           className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          data-testid="button-collapse-sidebar" title="Collapse sidebar">
+                          data-testid="button-collapse-sidebar" title="Collapse sidebar"
+                          data-help="Recolher Sidebar — colapsa o painel lateral para ganhar mais espaço no editor">
                           <ChevronLeft className="w-4 h-4" />
                         </button>
                       </div>
@@ -837,7 +850,8 @@ export default function Home() {
                       <h2 className="font-semibold text-sidebar-foreground text-sm">Carpets</h2>
                       <button type="button" onClick={handleCreateCarpet}
                         className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                        data-testid="button-create-carpet" title="New carpet">
+                        data-testid="button-create-carpet" title="New carpet"
+                        data-help="Novo Carpet — cria um carpet brush vazio para configurar tiles de tapete">
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
@@ -858,12 +872,14 @@ export default function Home() {
                       <div className="flex items-center gap-1">
                         <button type="button" onClick={handleCreate}
                           className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          data-testid="button-create-item" title="New item">
+                          data-testid="button-create-item" title="New item"
+                          data-help="Novo Item — cria um novo brush/item vazio na categoria ativa">
                           <Plus className="w-4 h-4" />
                         </button>
                         <button type="button" onClick={() => setSidebarOpen(false)}
                           className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          data-testid="button-collapse-sidebar" title="Collapse sidebar">
+                          data-testid="button-collapse-sidebar" title="Collapse sidebar"
+                          data-help="Recolher Sidebar — colapsa o painel lateral para ganhar mais espaço no editor">
                           <ChevronLeft className="w-4 h-4" />
                         </button>
                       </div>
@@ -888,7 +904,8 @@ export default function Home() {
               <div className="flex flex-col items-center pt-2 gap-2">
                 <button type="button" onClick={() => setSidebarOpen(true)}
                   className="w-8 h-8 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  data-testid="button-expand-sidebar" title="Expand sidebar">
+                  data-testid="button-expand-sidebar" title="Expand sidebar"
+                  data-help="Expandir Sidebar — abre o painel lateral com a lista de brushes da categoria ativa">
                   <ChevronRight className="w-4 h-4" />
                 </button>
                 {(isDoodadTab ? state.doodads.length + state.carpets.length : currentItems.length) > 0 && (

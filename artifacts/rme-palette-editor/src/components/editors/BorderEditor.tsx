@@ -182,9 +182,9 @@ export function BorderEditor() {
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-200">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Border Configuration</h2>
+        <h2 className="text-2xl font-bold mb-4" data-help="Border Configuration — configure o ID, grupo e as 12 direções de borda do terrain brush">Border Configuration</h2>
         <div className="grid grid-cols-3 gap-6">
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Border ID — identificador numérico único desta borda no arquivo XML de paletas do RME">
             <Label htmlFor="border-id">Border ID</Label>
             <Input
               id="border-id"
@@ -195,7 +195,7 @@ export function BorderEditor() {
               data-testid="input-border-id"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Group ID — agrupa múltiplas bordas para compartilhar transições. Opcional — deixe vazio se não usar grupos">
             <Label htmlFor="border-group">Group ID (optional)</Label>
             <Input
               id="border-group"
@@ -205,7 +205,7 @@ export function BorderEditor() {
               data-testid="input-border-group"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-help="Comment — comentário interno incluído no XML como atributo. Útil para documentar o nome do terrain">
             <Label htmlFor="border-comment">Comment (optional)</Label>
             <Input
               id="border-comment"
@@ -220,7 +220,7 @@ export function BorderEditor() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold">Direction Grid</h2>
+            <h2 className="text-xl font-bold" data-help="Direction Grid — grade com as 12 posições de borda (N, S, E, W, cantos côncavos C e diagonais D)">Direction Grid</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Type an ID and press Enter, click +, or click away to add. Double-click a badge to edit.
             </p>
@@ -230,6 +230,7 @@ export function BorderEditor() {
             size="sm"
             onClick={() => updateField("items", emptyBorderItems)}
             data-testid="button-clear-border-items"
+            data-help="Clear All — remove todos os IDs de direção desta borda, esvaziando o Direction Grid"
           >
             Clear All
           </Button>
