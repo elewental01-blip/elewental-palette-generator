@@ -1,0 +1,175 @@
+1. Help Mode → idiomas suportados
+
+
+
+- Remover suporte a idiomas extras.
+
+
+
+- Manter apenas:
+
+  - inglês (default)
+
+  - português
+
+
+
+- Remover completamente:
+
+  - polonês
+
+  - espanhol
+
+
+
+---
+
+
+
+2. Color Theme → impacto global no sistema
+
+
+
+- O Color Theme não deve afetar apenas a cor principal, mas também os seguintes elementos do sistema:
+
+
+
+2.1 Direction Grid (Borders e Carpets)
+
+
+
+- Alterar a cor dos indicadores visuais das direções.
+
+- Cor padrão atual: amarelo.
+
+- Deve ser substituída dinamicamente pelo Color Theme selecionado.
+
+
+
+---
+
+
+
+2.2 Composite 3D → Tile Layout
+
+
+
+- As bordas das layers do Tile Layout devem seguir o Color Theme.
+
+- Isso inclui:
+
+  - contornos das camadas
+
+  - highlights de seleção
+
+
+
+---
+
+
+
+2.3 Help Mode → interface e highlights
+
+
+
+- A cor padrão dos highlights e textos do Help Mode (hover tooltips) deve seguir o Color Theme.
+
+- Atualmente amarelo → deve ser dinâmico conforme seleção.
+
+
+
+---
+
+
+
+2.4 XML Output → textos
+
+
+
+- A cor dos textos exibidos no XML Output deve seguir o Color Theme.
+
+- Não manter amarelo fixo.
+
+
+
+---
+
+
+
+2.5 Botões principais de criação
+
+
+
+- Os seguintes botões devem seguir o Color Theme:
+
+
+
+Doodads:
+
+  - + Simple
+
+  - + Composite
+
+  - + Composite 3D
+
+
+
+Tileset Configuration:
+
+  - + Terrain
+
+  - + Doodad
+
+  - + Raw
+
+
+
+- Cor padrão: amarelo
+
+- Deve ser atualizada dinamicamente conforme o Color Theme selecionado.
+
+
+
+---
+
+
+
+3. Walls → correção de XML output
+
+
+
+- Problema atual:
+
+  - Ao criar uma nova wall configuration:
+
+    - server lookid aparece como 0 no input
+
+    - porém NÃO está aparecendo no XML output por padrão. Deve aparecer a tag com valor 0 mesmo se não preenchido um id.
+
+
+
+- Correção obrigatória:
+
+  - sempre que server lookid for 0 (ou qualquer valor definido), deve ser incluído no XML
+
+
+
+- Exemplo esperado:
+
+
+
+  server_lookid="0"
+
+
+
+- Regras:
+
+  - se campo estiver vazio → usar 0
+
+  - se campo tiver valor → usar valor informado
+
+  - nunca omitir a tag server_lookid no XML quando existir configuração de wall
+
+
+
+---

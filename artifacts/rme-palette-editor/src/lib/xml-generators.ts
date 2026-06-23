@@ -135,7 +135,7 @@ export function generateWallsXml(walls: WallItem[]): string {
   for (const wall of walls) {
     if (!wall.name) continue;
     let attrs = `name="${wall.name}" type="wall"`;
-    if (wall.serverLookId)            attrs += ` server_lookid="${wall.serverLookId}"`;
+    attrs += ` server_lookid="${wall.serverLookId ?? 0}"`;
     if (wall.draggable !== undefined) attrs += ` draggable="${wall.draggable}"`;
     if (wall.onBlocking !== undefined) attrs += ` on_blocking="${wall.onBlocking}"`;
     if (wall.thickness)               attrs += ` thickness="${wall.thickness}"`;

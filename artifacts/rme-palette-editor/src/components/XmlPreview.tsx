@@ -94,7 +94,7 @@ export function XmlPreview() {
         </div>
       </div>
       <ScrollArea className="flex-1 p-4 bg-[#0d0f15]">
-        <pre className="font-mono text-xs text-blue-300 whitespace-pre-wrap break-all">
+        <pre className="font-mono text-xs text-primary whitespace-pre-wrap break-all">
           {xmlContent || <span className="text-muted-foreground/40 italic">— empty —</span>}
         </pre>
       </ScrollArea>

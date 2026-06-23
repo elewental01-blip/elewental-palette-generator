@@ -98,7 +98,7 @@ const COLOR_THEMES = [
   { id: "black",          label: "Black",           p: "0 0% 18%",    fg: "0 0% 97%",  hue: 0,   sat: 0  },
 ] as const;
 
-type HelpLang = "en" | "pt" | "pl" | "es";
+type HelpLang = "en" | "pt";
 
 const HELP_EN: Record<string, string> = {
   "Logo EPE — clique para voltar à página inicial do Elewental Palette Editor": "EPE Logo — click to return to Elewental Palette Editor home",
@@ -304,7 +304,7 @@ function StylesMenu({
         <div className="mt-2 pt-2 border-t border-border/40">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1.5">Help Language</p>
           <div className="flex gap-1 px-1">
-            {(["en", "pt", "pl", "es"] as const).map((lang) => (
+            {(["en", "pt"] as const).map((lang) => (
               <button key={lang} type="button" onClick={() => onHelpLang(lang)}
                 className={[
                   "flex-1 py-1 rounded text-[11px] font-mono font-bold uppercase transition-colors border",
@@ -690,7 +690,10 @@ export default function Home() {
   const [helpText, setHelpText] = useState<string | null>(null);
   const [helpPos, setHelpPos] = useState({ x: 0, y: 0 });
   const [colorTheme, setColorTheme] = useState(() => localStorage.getItem("epe-color-theme") || "yellow-light");
-  const [helpLang, setHelpLang] = useState<HelpLang>(() => (localStorage.getItem("epe-help-lang") as HelpLang) || "en");
+  const [helpLang, setHelpLang] = useState<HelpLang>(() => {
+    const s = localStorage.getItem("epe-help-lang");
+    return s === "pt" ? "pt" : "en";
+  });
 
   const handleLogin = (u: string, p: string): boolean => {
     if (u === ADMIN_USER && p === ADMIN_PASS) {
@@ -930,7 +933,7 @@ export default function Home() {
           className={[
             "w-8 h-8 rounded flex items-center justify-center transition-colors shrink-0",
             helpMode
-              ? "bg-yellow-400/20 text-yellow-500 border border-yellow-400/30"
+              ? "bg-primary/20 text-primary border border-primary/30"
               : "text-muted-foreground hover:text-foreground hover:bg-accent",
           ].join(" ")}
           title={helpMode ? "Sair do modo ajuda" : "Modo ajuda — passe o mouse sobre elementos para ver descrições"}
@@ -1079,7 +1082,7 @@ export default function Home() {
       )}
       {helpMode && helpText && (
         <div
-          className="fixed z-[9999] pointer-events-none px-3 py-2 rounded-lg text-xs font-medium shadow-xl border animate-in fade-in duration-100 bg-yellow-100/95 dark:bg-black/85 text-yellow-900 dark:text-white border-yellow-300/60 dark:border-white/10"
+          className="fixed z-[9999] pointer-events-none px-3 py-2 rounded-lg text-xs font-medium shadow-xl border animate-in fade-in duration-100 bg-primary/10 dark:bg-background/95 text-foreground border-primary/30 dark:border-primary/20"
           style={{ left: helpPos.x, top: helpPos.y, maxWidth: 280 }}
         >
           {helpText}

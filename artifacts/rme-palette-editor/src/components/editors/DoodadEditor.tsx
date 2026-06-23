@@ -53,9 +53,9 @@ function buildGridCells(
           className={[
             "relative flex flex-col items-center justify-center rounded-md border transition-all select-none overflow-hidden",
             tile
-              ? (isOrigin ? "bg-primary/15 border-orange-500/60 ring-1 ring-orange-500/20" : "bg-primary/15 border-primary/50")
+              ? (isOrigin ? "bg-primary/15 border-primary/60 ring-1 ring-primary/20" : "bg-primary/15 border-primary/50")
               : isAdd || isEdit ? "bg-accent/20 border-primary border-dashed"
-              : isOrigin ? "bg-orange-500/15 border-orange-500/70 cursor-pointer hover:bg-orange-500/25 ring-1 ring-orange-500/20"
+              : isOrigin ? "bg-primary/15 border-primary/70 cursor-pointer hover:bg-primary/25 ring-1 ring-primary/20"
               : "bg-muted/10 border-border/20 cursor-pointer hover:bg-accent/20 hover:border-border/50",
           ].join(" ")}
           style={{ width: CELL, height: CELL }}
@@ -63,7 +63,7 @@ function buildGridCells(
           title={!tile ? `x=${x} y=${y}${extraTitle ? " " + extraTitle : ""}` : undefined}
         >
           <span className="absolute top-0.5 left-0.5 text-[7px] font-mono text-muted-foreground/25 pointer-events-none leading-none">{x},{y}</span>
-          {isOrigin && !tile && !isAdd && !isEdit && <span className="text-[9px] font-bold text-orange-500/60 pointer-events-none">0,0</span>}
+          {isOrigin && !tile && !isAdd && !isEdit && <span className="text-[9px] font-bold text-primary/60 pointer-events-none">0,0</span>}
           {tile && !isEdit && (
             <div className="flex flex-col items-center gap-0.5 w-full px-1" onClick={(e) => e.stopPropagation()}>
               <span className="text-sm font-mono font-bold text-primary leading-none">{tile.itemId}</span>
@@ -137,7 +137,7 @@ function CompositeTileGrid({ tiles, onChange }: { tiles: { x: number; y: number;
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-muted-foreground">Click a cell to add · ✏ edit · ✕ remove · orange = origin (0,0)</p>
+      <p className="text-[11px] text-muted-foreground">Click a cell to add · ✏ edit · ✕ remove · <span className="text-primary/70">highlighted</span> = origin (0,0)</p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
         {RANGE_OPTIONS.map((r) => (
@@ -301,7 +301,7 @@ function Composite3DGrid({ tiles, onChange }: {
                   <span className={[
                     "text-[9px] font-mono px-1.5 py-0.5 rounded",
                     isActive
-                      ? "text-yellow-300 bg-yellow-400/20 border border-yellow-400/50 font-bold"
+                      ? "text-primary bg-primary/20 border border-primary/50 font-bold"
                       : "text-muted-foreground/50 bg-sidebar/70",
                   ].join(" ")}>
                     {floorLabel(z)}
@@ -317,7 +317,7 @@ function Composite3DGrid({ tiles, onChange }: {
                 )}
                 {isActive ? (
                   <div
-                    className="inline-grid gap-0.5 rounded-lg border-2 border-yellow-400 bg-sidebar p-1.5 shadow-lg shadow-yellow-400/10"
+                    className="inline-grid gap-0.5 rounded-lg border-2 border-primary bg-sidebar p-1.5 shadow-lg shadow-primary/10"
                     style={{ gridTemplateColumns: `repeat(${size}, ${cell}px)` }}
                     data-testid="composite-3d-tile-grid"
                   >
@@ -342,7 +342,7 @@ function Composite3DGrid({ tiles, onChange }: {
                           <div key={`${x}-${y}`}
                             className={["rounded border flex items-center justify-center",
                               hasTile ? "bg-primary/40 border-primary/70"
-                              : isOrigin ? "bg-orange-500/20 border-orange-500/50"
+                              : isOrigin ? "bg-primary/20 border-primary/50"
                               : "bg-muted/25 border-border/50",
                             ].join(" ")}
                             style={{ width: cell, height: cell }}>
@@ -370,7 +370,7 @@ function Composite3DGrid({ tiles, onChange }: {
           className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors"
           title="Go up (Z−)"
           data-help="Subir — muda para o andar acima (Z negativo, deslocado para noroeste na perspectiva)">↑</button>
-        <span className="font-mono text-xs min-w-[3.5rem] text-center bg-muted/40 border border-orange-500/30 rounded px-2 py-0.5 leading-5 text-orange-400"
+        <span className="font-mono text-xs min-w-[3.5rem] text-center bg-muted/40 border border-primary/30 rounded px-2 py-0.5 leading-5 text-primary"
           data-help="Camada Z ativa — camada sendo editada. Tiles adicionados vão para esta altitude">{zLabel(activeZ)}</span>
         <button type="button" onClick={() => setActiveZ((z) => Math.min(Z3D_MAX, z + 1))} disabled={activeZ === Z3D_MAX}
           className="w-5 h-5 rounded border border-border/40 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground disabled:opacity-25 transition-colors"
@@ -385,7 +385,7 @@ function Composite3DGrid({ tiles, onChange }: {
           {occupiedZ.map((z) => (
             <button key={z} type="button" onClick={() => setActiveZ(z)}
               className={["px-1.5 py-0 text-[10px] font-mono rounded border transition-colors leading-5",
-                z === activeZ ? "bg-orange-500/20 border-orange-500/60 text-orange-400 font-bold"
+                z === activeZ ? "bg-primary/20 border-primary/60 text-primary font-bold"
                 : "border-border/40 text-muted-foreground hover:border-primary/50 hover:text-foreground",
               ].join(" ")}
               data-help={`Camada ${zLabel(z)} — clique para editar esta camada (${tilesOnZ(z).length} tile${tilesOnZ(z).length !== 1 ? "s" : ""})`}>
@@ -400,7 +400,7 @@ function Composite3DGrid({ tiles, onChange }: {
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-muted-foreground">
-        Z negativo = andar <span className="text-blue-400 font-medium">acima</span> (noroeste) · Z positivo = andar <span className="text-orange-400 font-medium">abaixo</span> (sudeste) · clique para adicionar
+        Z negativo = andar <span className="text-blue-400 font-medium">acima</span> (noroeste) · Z positivo = andar <span className="text-primary font-medium">abaixo</span> (sudeste) · clique para adicionar
       </p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
@@ -581,13 +581,13 @@ export function DoodadEditor() {
         <div className="flex items-center justify-between">
           <h3 className="font-semibold" data-help="Elements — lista de elementos visuais que compõem este doodad (Simple, Composite ou Composite 3D)">Elements</h3>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="text-blue-400 border-blue-500/40 hover:bg-blue-500/10"
+            <Button size="sm" variant="outline" className="text-primary border-primary/40 hover:bg-primary/10"
               onClick={() => addElement("simple")} data-testid="button-add-simple"
               data-help="+ Simple — adiciona um elemento simples com um único tile e chance de aparecimento">+ Simple</Button>
-            <Button size="sm" variant="outline" className="text-amber-400 border-amber-500/40 hover:bg-amber-500/10"
+            <Button size="sm" variant="outline" className="text-primary border-primary/40 hover:bg-primary/10"
               onClick={() => addElement("composite")} data-testid="button-add-composite"
               data-help="+ Composite — adiciona um elemento composto por múltiplos tiles posicionados em grade X/Y">+ Composite</Button>
-            <Button size="sm" variant="outline" className="text-teal-400 border-teal-500/40 hover:bg-teal-500/10"
+            <Button size="sm" variant="outline" className="text-primary border-primary/40 hover:bg-primary/10"
               onClick={() => addElement("composite3d")} data-testid="button-add-composite3d"
               data-help="+ Composite 3D — adiciona um elemento composto em perspectiva isométrica com camadas Z (andares)">+ Composite 3D</Button>
           </div>
