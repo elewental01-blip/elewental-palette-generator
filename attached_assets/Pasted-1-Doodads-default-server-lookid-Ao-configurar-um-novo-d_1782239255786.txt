@@ -1,0 +1,151 @@
+1. Doodads → default server lookid
+
+
+
+- Ao configurar um novo doodad brush:
+
+  - Se o campo “server lookid” não for preenchido:
+
+    - o valor padrão deve ser 0 no campo de input
+
+    - e também deve ser 0 no XML output
+
+
+
+- Garantir consistência:
+
+  - não pode existir divergência entre UI e exportação
+
+  - default deve ser aplicado em ambos os pontos (frontend e geração de XML)
+
+
+
+---
+
+
+
+2. Tile Layout (Composite Grid) → range, Z e comportamento 3D
+
+
+
+2.1 Range X/Y
+
+
+
+- O grid deve permitir expansão dinâmica até:
+
+  - mínimo: -9
+
+  - máximo: 9
+
+
+
+- Limite anterior (-12|12) não deve mais existir.
+
+
+
+---
+
+
+
+2.2 Suporte a Z (camadas)
+
+
+
+- O Tile Layout deve suportar eixo Z além de X e Y.
+
+
+
+- Regras do Z:
+
+  - z padrão = 0
+
+  - valores possíveis: -7 até 7
+
+  - cada tile deve gerar corretamente o valor z no XML
+
+
+
+- Exemplo de output:
+
+<tile x="-1" y="-3" z="-1">
+
+  <item id="123"/>
+
+</tile>
+
+
+
+---
+
+
+
+2.3 Visualização do grid com Z
+
+- para visualização com Z, criar novo botão "composite 3d", e manter o composite comum apenas para x,y.
+
+- O layout do composite grid deve representar camadas Z em perspectiva 45º:
+
+  - orientação visual:
+
+    - topo → norte/esquerda
+
+    - base (z negativo mais profundo) → sul/direita
+
+
+
+- Comportamento visual:
+
+  - camada Z atual sempre em destaque (ativa)
+
+  - demais camadas devem aparecer abaixo com transparência
+
+
+
+- Navegação entre camadas:
+
+  - manter controle de subir/descer Z
+
+  - mudança de camada atualiza visual imediatamente
+
+
+
+---
+
+
+
+2.4 Janela do Tile Layout (UI de grande escala)
+
+
+
+- Quando o layout for grande:
+
+  - NÃO deve apenas expandir/ocultar dentro do mesmo painel
+
+  - deve abrir uma janela separada, maximizada, dedicada ao layout
+
+
+
+- Essa janela deve permitir:
+
+  - edição completa do grid
+
+  - navegação entre X/Y/Z
+
+
+
+- Os botões de expandir/ocultar podem permanecer, mas não substituem a janela dedicada.
+
+
+
+---
+
+
+
+3. UI geral → comportamento do efeito no título EPE
+
+
+
+- O título do app EPE só expande ao passar o mouse hover em cima do ícone, isso está correto, ao passar o mouse em cima do título EPE deve ativar o efeito do ícone também.
+
+---

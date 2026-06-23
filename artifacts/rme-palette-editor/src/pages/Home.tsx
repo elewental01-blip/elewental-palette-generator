@@ -91,13 +91,15 @@ const TIPS = [
 ];
 const INNER_BODY = "18.61,6.24 23.14,8.86 25.76,13.39 25.76,18.61 23.14,23.14 18.61,25.76 13.39,25.76 8.86,23.14 6.24,18.61 6.24,13.39 8.86,8.86 13.39,6.24";
 
-function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = "" }: {
+function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = "", externalTrigger }: {
   size?: number;
   effectsEnabled?: boolean;
   className?: string;
+  externalTrigger?: number;
 }) {
   const [bursting, setBursting] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevTriggerRef = useRef(0);
 
   const triggerBurst = () => {
     if (!effectsEnabled) return;
@@ -106,6 +108,16 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setBursting(false), 490);
   };
+
+  useEffect(() => {
+    if (externalTrigger && externalTrigger !== prevTriggerRef.current) {
+      prevTriggerRef.current = externalTrigger;
+      if (!effectsEnabled) return;
+      setBursting(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setBursting(false), 490);
+    }
+  }, [externalTrigger, effectsEnabled]);
 
   useEffect(() => () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); }, []);
 
@@ -600,6 +612,7 @@ export default function Home() {
   });
   const [isLoggedIn, setIsLoggedIn] = useState(loadAuth);
   const [iconHovered, setIconHovered] = useState(false);
+  const [iconTrigger, setIconTrigger] = useState(0);
 
   const handleLogin = (u: string, p: string): boolean => {
     if (u === ADMIN_USER && p === ADMIN_PASS) {
@@ -711,9 +724,12 @@ export default function Home() {
               onMouseEnter={() => setIconHovered(true)}
               onMouseLeave={() => setIconHovered(false)}
             >
-              <AnimatedDodecagramIcon size={28} effectsEnabled={effectsEnabled} />
+              <AnimatedDodecagramIcon size={28} effectsEnabled={effectsEnabled} externalTrigger={iconTrigger} />
             </div>
-            <div className="flex items-center overflow-hidden">
+            <div
+              className="flex items-center overflow-hidden"
+              onMouseEnter={() => setIconTrigger((t) => t + 1)}
+            >
               <span className="font-bold text-sm tracking-tight">EPE</span>
               <span className={[
                 "text-sm font-medium overflow-hidden whitespace-nowrap transition-all duration-300 ease-out text-muted-foreground",

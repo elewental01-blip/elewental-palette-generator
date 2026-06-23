@@ -58,7 +58,7 @@ export function generateDoodadsXml(doodads: DoodadItem[]): string {
   for (const doodad of doodads) {
     if (!doodad.name) continue;
     let attrs = `name="${doodad.name}" type="doodad"`;
-    if (doodad.serverLookId)             attrs += ` server_lookid="${doodad.serverLookId}"`;
+    if (doodad.serverLookId !== undefined) attrs += ` server_lookid="${doodad.serverLookId}"`;
     if (doodad.draggable !== undefined)  attrs += ` draggable="${doodad.draggable}"`;
     if (doodad.onBlocking !== undefined) attrs += ` on_blocking="${doodad.onBlocking}"`;
     if (doodad.thickness)                attrs += ` thickness="${doodad.thickness}"`;
@@ -75,6 +75,17 @@ export function generateDoodadsXml(doodads: DoodadItem[]): string {
         const lines: string[] = [
           `    <composite chance="${el.chance}">`,
           ...el.tiles.map((t) => `      <tile x="${t.x}" y="${t.y}"> <item id="${t.itemId}"/> </tile>`),
+          `    </composite>`,
+        ];
+        if (el.alternate) {
+          xml += `  <alternate>\n${lines.join("\n")}\n  </alternate>\n`;
+        } else {
+          xml += lines.map((l) => l.trimStart() === l ? "  " + l : l).join("\n").replace(/^    /gm, "  ") + "\n";
+        }
+      } else if (el.type === "composite3d") {
+        const lines: string[] = [
+          `    <composite chance="${el.chance}">`,
+          ...el.tiles.map((t) => `      <tile x="${t.x}" y="${t.y}" z="${t.z}"> <item id="${t.itemId}"/> </tile>`),
           `    </composite>`,
         ];
         if (el.alternate) {
