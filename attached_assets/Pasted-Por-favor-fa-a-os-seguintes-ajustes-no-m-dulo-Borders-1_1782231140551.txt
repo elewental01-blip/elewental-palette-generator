@@ -1,0 +1,112 @@
+Por favor, faça os seguintes ajustes no módulo Borders:
+
+
+
+### 1. Border ID não deve ser obrigatório
+
+
+
+- Remova a validação que exibe a mensagem "Border ID required".
+
+- O usuário deve poder criar e editar uma borda mesmo sem informar um Border ID.
+
+- Quando o usuário preencher qualquer informação que gere conteúdo no XML Output (Group ID, Comment ou qualquer campo do Direction Grid), e o campo Border ID estiver vazio, o sistema deve utilizar automaticamente o valor 0.
+
+- O XML nunca deve gerar valores vazios, null ou omitir o atributo id.
+
+
+
+Exemplo esperado, neste exemplo é quando preenchido os campos comment e direction grid, e não preenchido o border id, perceba que ele recebe o valor 0:
+
+
+
+<border id="0"> <!-- test -->
+
+  <borderitem edge="n" item="123"/>
+
+  <borderitem edge="w" item="123"/>
+
+  <borderitem edge="e" item="123"/>
+
+  <borderitem edge="s" item="123"/>
+
+  <borderitem edge="cnw" item="123"/>
+
+  <borderitem edge="cne" item="123"/>
+
+  <borderitem edge="cse" item="123"/>
+
+  <borderitem edge="csw" item="123"/>
+
+  <borderitem edge="dnw" item="123"/>
+
+  <borderitem edge="dne" item="123"/>
+
+  <borderitem edge="dse" item="123"/>
+
+  <borderitem edge="dsw" item="123"/>
+
+</border>
+
+
+
+### 2. Melhorar o fluxo de preenchimento do Direction Grid
+
+
+
+- Atualmente é necessário digitar um Item ID e clicar no botão "+" para adicioná-lo.
+
+- Altere esse comportamento para que o item seja adicionado automaticamente quando o usuário terminar a digitação e clicar em qualquer outra parte da interface ou selecionar outro campo.
+
+- O botão "+" pode permanecer disponível como método alternativo, mas não deve mais ser obrigatório.
+
+- Esse comportamento deve funcionar em todas as posições do Direction Grid.
+
+
+
+### 3. Corrigir o mapeamento da direção Sul (S)
+
+
+
+- A posição identificada visualmente como S (localizada acima no Direction Grid) está sendo exportada incorretamente como:
+
+
+
+<borderitem edge="n" item="123" />
+
+
+
+- O valor do atributo item é apenas um exemplo.
+
+- Essa posição deve gerar:
+
+
+
+<borderitem edge="s" item="123" />
+
+
+
+### 4. Corrigir o mapeamento da direção Norte (N)
+
+
+
+- A posição identificada visualmente como N (localizada abaixo no Direction Grid) está sendo exportada incorretamente como:
+
+
+
+<borderitem edge="s" item="123" />
+
+
+
+- O valor do atributo item é apenas um exemplo.
+
+- Essa posição deve gerar:
+
+
+
+<borderitem edge="n" item="123" />
+
+
+
+
+

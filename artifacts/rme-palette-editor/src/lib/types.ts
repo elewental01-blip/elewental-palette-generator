@@ -2,7 +2,7 @@ export type BorderDirection = "n" | "s" | "e" | "w" | "cnw" | "cne" | "csw" | "c
 
 export interface BorderItem {
   id: string;
-  borderId: number;
+  borderId?: number;
   group?: number;
   comment?: string;
   items: Record<BorderDirection, number[]>;

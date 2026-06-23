@@ -10,8 +10,13 @@ const CARPET_DIR_ORDER: CarpetAlignDirection[] = [
 export function generateBordersXml(borders: BorderItem[]): string {
   let xml = "";
   for (const border of borders) {
-    if (!border.borderId) continue;
-    xml += `<border id="${border.borderId}"${border.group ? ` group="${border.group}"` : ""}>${border.comment ? ` <!-- ${border.comment} -->` : ""}\n`;
+    const hasContent =
+      border.comment ||
+      border.group !== undefined ||
+      Object.values(border.items).some((arr) => arr.length > 0);
+    if (!hasContent) continue;
+    const id = border.borderId ?? 0;
+    xml += `<border id="${id}"${border.group ? ` group="${border.group}"` : ""}>${border.comment ? ` <!-- ${border.comment} -->` : ""}\n`;
     const directions = ["n", "w", "e", "s", "cnw", "cne", "cse", "csw", "dnw", "dne", "dse", "dsw"] as const;
     for (const dir of directions) {
       if (border.items[dir]) {

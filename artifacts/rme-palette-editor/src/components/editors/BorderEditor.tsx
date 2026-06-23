@@ -1,11 +1,11 @@
+import { useState } from "react";
 import { useEditor } from "@/lib/context";
 import { BorderItem, BorderDirection } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, X, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, X } from "lucide-react";
 
 // ── SVG border direction icons ────────────────────────────────────────────────
 
@@ -14,9 +14,7 @@ function BorderIcon({ dir }: { dir: BorderDirection }) {
   const a = "hsl(45 90% 55%)";
 
   const icons: Record<BorderDirection, JSX.Element> = {
-    // N border = tile at the NORTH edge → accent at BOTTOM
     n: (<><rect width="24" height="17" fill={g} /><rect y="17" width="24" height="7" fill={a} /></>),
-    // S border = tile at the SOUTH edge → accent at TOP
     s: (<><rect width="24" height="7" fill={a} /><rect y="7" width="24" height="17" fill={g} /></>),
     e: (<><rect width="17" height="24" fill={g} /><rect x="17" width="7" height="24" fill={a} /></>),
     w: (<><rect width="7" height="24" fill={a} /><rect x="7" width="17" height="24" fill={g} /></>),
@@ -45,7 +43,16 @@ function DirectionCell({ dir, label, items, onUpdate }: {
   items: number[];
   onUpdate: (ids: number[]) => void;
 }) {
+  const [inputVal, setInputVal] = useState("");
   const hasItems = items.length > 0;
+
+  const commit = () => {
+    const val = parseInt(inputVal);
+    if (!isNaN(val) && val > 0) {
+      onUpdate([...items, val]);
+      setInputVal("");
+    }
+  };
 
   return (
     <div
@@ -83,17 +90,15 @@ function DirectionCell({ dir, label, items, onUpdate }: {
 
       <form
         className="flex items-center gap-0 px-2 pb-2 pt-1 mt-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const inp = (e.target as HTMLFormElement).elements.namedItem("val") as HTMLInputElement;
-          const val = parseInt(inp.value);
-          if (val && !isNaN(val)) { onUpdate([...items, val]); inp.value = ""; }
-        }}
+        onSubmit={(e) => { e.preventDefault(); commit(); }}
       >
         <Input
           name="val"
           type="number"
           placeholder="ID..."
+          value={inputVal}
+          onChange={(e) => setInputVal(e.target.value)}
+          onBlur={commit}
           className="h-6 text-[11px] px-1.5 rounded-r-none border-r-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0"
           data-testid={`input-direction-${dir}`}
         />
@@ -132,13 +137,13 @@ export function BorderEditor() {
     | { type: "empty" }
     | { type: "ctr" };
 
-  // 5×5 layout — N and S labels are swapped per user request (icons remain correct)
+  // 5×5 layout — "S" label (top) maps to dir "s", "N" label (bottom) maps to dir "n"
   const layout: CellDef[] = [
-    { type: "dir", dir: "cse", label: "CSE" }, { type: "empty" }, { type: "dir", dir: "n", label: "S" },   { type: "empty" }, { type: "dir", dir: "csw", label: "CSW" },
+    { type: "dir", dir: "cse", label: "CSE" }, { type: "empty" }, { type: "dir", dir: "s", label: "S" },   { type: "empty" }, { type: "dir", dir: "csw", label: "CSW" },
     { type: "dir", dir: "dse", label: "DSE" }, { type: "empty" }, { type: "empty" },                        { type: "empty" }, { type: "dir", dir: "dsw", label: "DSW" },
-    { type: "empty" },                          { type: "dir", dir: "e", label: "E" },   { type: "ctr" },   { type: "dir", dir: "w", label: "W" },   { type: "empty" },
+    { type: "empty" },                          { type: "dir", dir: "e", label: "E" }, { type: "ctr" },      { type: "dir", dir: "w", label: "W" }, { type: "empty" },
     { type: "dir", dir: "dne", label: "DNE" }, { type: "empty" }, { type: "empty" },                        { type: "empty" }, { type: "dir", dir: "dnw", label: "DNW" },
-    { type: "dir", dir: "cne", label: "CNE" }, { type: "empty" }, { type: "dir", dir: "s", label: "N" },   { type: "empty" }, { type: "dir", dir: "cnw", label: "CNW" },
+    { type: "dir", dir: "cne", label: "CNE" }, { type: "empty" }, { type: "dir", dir: "n", label: "N" },   { type: "empty" }, { type: "dir", dir: "cnw", label: "CNW" },
   ];
 
   return (
@@ -146,23 +151,19 @@ export function BorderEditor() {
       <div>
         <h2 className="text-2xl font-bold mb-4">Border Configuration</h2>
 
-        {!activeItem.borderId && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Border ID is required.</AlertDescription>
-          </Alert>
-        )}
-
         <div className="grid grid-cols-3 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="border-id">Border ID *</Label>
+            <Label htmlFor="border-id">Border ID</Label>
             <Input
               id="border-id"
               type="number"
-              value={activeItem.borderId || ""}
-              onChange={(e) => updateField("borderId", parseInt(e.target.value) || 0)}
+              value={activeItem.borderId ?? ""}
+              onChange={(e) => {
+                const raw = e.target.value;
+                updateField("borderId", raw === "" ? undefined : parseInt(raw));
+              }}
+              placeholder="0"
               data-testid="input-border-id"
-              className={!activeItem.borderId ? "border-destructive focus-visible:ring-destructive" : ""}
             />
           </div>
           <div className="space-y-2">
@@ -170,7 +171,7 @@ export function BorderEditor() {
             <Input
               id="border-group"
               type="number"
-              value={activeItem.group || ""}
+              value={activeItem.group ?? ""}
               onChange={(e) => updateField("group", parseInt(e.target.value) || undefined)}
               data-testid="input-border-group"
             />
@@ -192,7 +193,7 @@ export function BorderEditor() {
           <div>
             <h2 className="text-xl font-bold">Direction Grid</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Each icon shows where the border tile sits. Type an ID and press Enter or click +.
+              Type an ID and press Enter, click +, or click away to add.
             </p>
           </div>
           <Button
