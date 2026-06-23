@@ -376,31 +376,38 @@ input[type="number"] {
 }
 
 /* ── EPE icon animations ───────────────────────────────────────────────────── */
+
+/* Seam fix: body stroke covers sub-pixel anti-aliasing gaps between body and tips.
+   paint-order: stroke fill ensures the stroke is drawn under the fill,
+   extending only outward — invisible at rest (tips cover it), fills gaps during animation. */
+.epe-body {
+  stroke: #EAB308;
+  stroke-width: 2.5;
+  paint-order: stroke fill;
+}
+
 @keyframes epe-tip-burst {
-  0%, 65%, 100% { translate: 0 0; }
-  30% { translate: calc(var(--tip-dx, 0) * 5px) calc(var(--tip-dy, 0) * 5px); }
+  0%          { translate: 0 0; }
+  25%         { translate: calc(var(--tip-dx, 0) * 5px) calc(var(--tip-dy, 0) * 5px); }
+  70%, 100%   { translate: 0 0; }
 }
 @keyframes epe-body-pulse {
-  0%, 100% { scale: 1; opacity: 1; }
-  30% { scale: 0.88; opacity: 0.7; }
-  65% { scale: 1.04; opacity: 1; }
+  0%, 100%    { scale: 1;    opacity: 1; }
+  25%         { scale: 0.88; opacity: 0.7; }
+  70%         { scale: 1;    opacity: 1; }
 }
 @keyframes epe-icon-spin-idle {
   0% { rotate: 0deg; }
   100% { rotate: 360deg; }
 }
-@keyframes epe-title-expand {
-  from { opacity: 0; max-width: 0; }
-  to { opacity: 1; max-width: 200px; }
-}
 
 .epe-icon-animating .epe-tip {
-  animation: epe-tip-burst 0.5s ease-out 0s both;
-  transform-box: fill-box;
-  transform-origin: 16px 16px;
+  animation: epe-tip-burst 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0s both;
+  transform-box: view-box;
+  transform-origin: center;
 }
 .epe-icon-animating .epe-body {
-  animation: epe-body-pulse 0.5s ease-out 0s both;
-  transform-box: fill-box;
-  transform-origin: 16px 16px;
+  animation: epe-body-pulse 0.55s ease-in-out 0s both;
+  transform-box: view-box;
+  transform-origin: center;
 }

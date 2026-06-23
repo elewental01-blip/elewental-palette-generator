@@ -304,7 +304,7 @@ export function CarpetEditor() {
         </div>
       </div>
 
-      <TilesetRegistration brushName={activeItem.name} defaultSectionType="doodad" />
+      <TilesetRegistration brushName={activeItem.name} />
     </div>
   );
 }

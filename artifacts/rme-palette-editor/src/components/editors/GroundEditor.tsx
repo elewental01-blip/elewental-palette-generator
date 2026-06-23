@@ -184,7 +184,7 @@ export function GroundEditor() {
         </div>
       </div>
 
-      <TilesetRegistration brushName={activeItem.name} defaultSectionType="terrain" />
+      <TilesetRegistration brushName={activeItem.name} />
     </div>
   );
 }

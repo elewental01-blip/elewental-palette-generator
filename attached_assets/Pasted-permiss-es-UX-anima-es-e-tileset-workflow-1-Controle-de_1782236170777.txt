@@ -1,0 +1,189 @@
+permissões, UX, animações e tileset workflow
+
+
+
+1. Controle de acesso → edição da Home
+
+
+
+- O menu de edição de páginas da Home e o botão “Edit” para editar conteúdo devem ser visíveis apenas para usuários autenticados.
+
+
+
+- Autenticação:
+
+  - Não utilizar database.
+
+  - Implementar login simples com credenciais fixas (usuário e senha definidos no código).
+
+
+
+- Ponto de login:
+
+  - O login deve ser acessível no botão/área de display onde atualmente ficam os controles de dark mode e effects.
+
+
+
+- Regra:
+
+  - Usuário não logado: não vê nem acessa edição da Home.
+
+  - Usuário logado: acesso completo às ferramentas de edição da Home.
+
+
+
+---
+
+
+
+2. Ícone do sistema → suavização de animação
+
+
+
+- Ajustar o efeito de animação do ícone.
+
+
+
+- Problema atual:
+
+  - Ao final da animação, quando as partes se recombinam, há uma linha circular visível indicando o ponto de junção.
+
+
+
+- Ajuste necessário:
+
+  - Suavizar a transição final.
+
+  - Eliminar qualquer linha ou artefato visível durante a recomposição.
+
+  - A junção das partes deve parecer contínua e limpa, sem “costura” visual.
+
+
+
+---
+
+
+
+3. Navegação → ícone e título
+
+
+
+- Clicar no ícone do menu e/ou no título deve redirecionar para a Home page.
+
+
+
+- Comportamento do título:
+
+  - O texto “Elewental Palette Editor” deve aparecer somente no hover do ícone.
+
+  - O hover no texto “EPE” não deve expandir o nome completo.
+
+
+
+---
+
+
+
+4. Tileset Generator → redefinição de comportamento
+
+
+
+- Corrigir interpretação do sistema sobre o “tileset generator”.
+
+
+
+- Não deve gerar estrutura completa de tileset.
+
+
+
+- Objetivo real:
+
+  - Gerar apenas tags individuais de registro.
+
+
+
+---
+
+
+
+5. Grounds / Doodads / Carpets / Walls → Tileset Registration
+
+
+
+- Em cada um desses menus existe uma área de “tileset registration”.
+
+
+
+- Comportamento correto:
+
+  - Essa área serve apenas como atalho para gerar uma única tag.
+
+
+
+- Exemplo principal:
+
+  - Ao configurar um ground e clicar em “Generate tileset”:
+
+    - O sistema deve gerar apenas:
+
+      <brush name="New Ground"/> (new ground é um exemplo, deve gerar com o ground name, doodad, carpet ou wall, escolhido pelo usuário.)
+
+
+
+---
+
+
+
+6. Tilesets menu (modo avançado)
+
+
+
+- O menu “Tilesets” também gera tags, porém com maior controle.
+
+
+
+- Diferença principal:
+
+  - No menu Tilesets, é permitido preencher:
+
+    - Nome do brush, OU
+
+    - IDs (fromid / toid)
+
+
+
+- Exemplo de saída:
+
+  - <brush name="New Ground"/>
+
+  - <item fromid="486"/>
+
+  - <item fromid="1280" toid="1283"/>
+
+
+
+---
+
+
+
+7. Conceito geral do Tileset Registration
+
+
+
+- Cada menu (Grounds, Doodads, Carpets, Walls):
+
+  - Gera apenas uma tag simples de brush como atalho rápido.
+
+
+
+- Menu Tilesets:
+
+  - Função mais completa para geração manual ou baseada em IDs.
+
+
+
+- Objetivo:
+
+  - Separar claramente “atalho rápido” vs “registro completo”.
+
+  - Evitar geração incorreta de estruturas complexas de tileset dentro dos menus secundários.

@@ -164,6 +164,26 @@ export function generateWallsXml(walls: WallItem[]): string {
   return xml.trimEnd();
 }
 
+export function generateTilesetEntriesXml(tileset: TilesetItem): string {
+  let xml = "";
+  for (const section of tileset.sections) {
+    for (const entry of section.entries) {
+      if (entry.kind === "brush" && entry.name) {
+        xml += `<brush name="${entry.name}"/>\n`;
+      } else if (entry.kind === "item" && entry.id) {
+        xml += `<item fromid="${entry.id}"/>\n`;
+      } else if (entry.kind === "range" && entry.fromid) {
+        if (entry.toid && entry.toid !== entry.fromid) {
+          xml += `<item fromid="${entry.fromid}" toid="${entry.toid}"/>\n`;
+        } else {
+          xml += `<item fromid="${entry.fromid}"/>\n`;
+        }
+      }
+    }
+  }
+  return xml.trimEnd();
+}
+
 export function generateTilesetsXml(tilesets: TilesetItem[]): string {
   let xml = "";
   for (const tileset of tilesets) {
@@ -173,12 +193,16 @@ export function generateTilesetsXml(tilesets: TilesetItem[]): string {
       if (section.entries.length === 0) continue;
       xml += `\t<${section.type}>\n`;
       for (const entry of section.entries) {
-        if (entry.kind === "brush") {
+        if (entry.kind === "brush" && entry.name) {
           xml += `\t\t<brush name="${entry.name}"/>\n`;
         } else if (entry.kind === "item") {
-          xml += `\t\t<item id="${entry.id}"/>\n`;
+          xml += `\t\t<item fromid="${entry.id}"/>\n`;
         } else if (entry.kind === "range") {
-          xml += `\t\t<item fromid="${entry.fromid}" toid="${entry.toid}"/>\n`;
+          if (entry.toid && entry.toid !== entry.fromid) {
+            xml += `\t\t<item fromid="${entry.fromid}" toid="${entry.toid}"/>\n`;
+          } else {
+            xml += `\t\t<item fromid="${entry.fromid}"/>\n`;
+          }
         }
       }
       xml += `\t</${section.type}>\n`;

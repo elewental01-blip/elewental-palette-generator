@@ -11,11 +11,22 @@ import { XmlPreview } from "@/components/XmlPreview";
 import {
   Layers, Image as ImageIcon, Box, BrickWall, Database, Home as HomeIcon,
   Plus, Trash2, ChevronLeft, ChevronRight, Moon, Sun, Sparkles, Settings2,
-  ChevronUp, ChevronDown, Edit3, Eye, FileText,
+  ChevronUp, ChevronDown, Edit3, Eye, FileText, Lock, LogOut,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+// ── Auth ────────────────────────────────────────────────────────────────────────
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "epe";
+
+function loadAuth(): boolean {
+  try { return sessionStorage.getItem("epe-auth") === "1"; } catch { return false; }
+}
+function saveAuth(v: boolean) {
+  try { if (v) sessionStorage.setItem("epe-auth", "1"); else sessionStorage.removeItem("epe-auth"); } catch {}
+}
 
 // ── Blog post type ─────────────────────────────────────────────────────────────
 interface BlogPost {
@@ -126,16 +137,43 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
   );
 }
 
-// ── Styles menu (dark + effects) ───────────────────────────────────────────────
+// ── Styles menu (dark + effects + auth) ────────────────────────────────────────
 
-function StylesMenu({ darkMode, onDarkMode, effectsEnabled, onEffects }: {
-  darkMode: boolean;
-  onDarkMode: (v: boolean) => void;
-  effectsEnabled: boolean;
-  onEffects: (v: boolean) => void;
-}) {
+function Toggle({ on }: { on: boolean }) {
   return (
-    <Popover>
+    <span className={`w-7 h-4 rounded-full transition-colors flex items-center px-0.5 ${on ? "bg-primary" : "bg-muted-foreground/30"}`}>
+      <span className={`w-3 h-3 rounded-full bg-white transition-transform ${on ? "translate-x-3" : "translate-x-0"}`} />
+    </span>
+  );
+}
+
+function StylesMenu({
+  darkMode, onDarkMode, effectsEnabled, onEffects,
+  isLoggedIn, onLogin, onLogout,
+}: {
+  darkMode: boolean; onDarkMode: (v: boolean) => void;
+  effectsEnabled: boolean; onEffects: (v: boolean) => void;
+  isLoggedIn: boolean; onLogin: (u: string, p: string) => boolean; onLogout: () => void;
+}) {
+  const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+  const [err, setErr] = useState(false);
+
+  const handleLogin = () => {
+    if (onLogin(user, pass)) {
+      setUser(""); setPass(""); setErr(false); setShowLogin(false);
+    } else {
+      setErr(true);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleLogin();
+  };
+
+  return (
+    <Popover onOpenChange={(open) => { if (!open) { setShowLogin(false); setErr(false); } }}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -146,7 +184,7 @@ function StylesMenu({ darkMode, onDarkMode, effectsEnabled, onEffects }: {
           <Settings2 className="w-4 h-4" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-2" align="end">
+      <PopoverContent className="w-52 p-2" align="end">
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1.5">Display</p>
         <button
           type="button"
@@ -157,9 +195,7 @@ function StylesMenu({ darkMode, onDarkMode, effectsEnabled, onEffects }: {
             {darkMode ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
             Dark mode
           </span>
-          <span className={`w-7 h-4 rounded-full transition-colors flex items-center px-0.5 ${darkMode ? "bg-primary" : "bg-muted-foreground/30"}`}>
-            <span className={`w-3 h-3 rounded-full bg-white transition-transform ${darkMode ? "translate-x-3" : "translate-x-0"}`} />
-          </span>
+          <Toggle on={darkMode} />
         </button>
         <button
           type="button"
@@ -170,10 +206,68 @@ function StylesMenu({ darkMode, onDarkMode, effectsEnabled, onEffects }: {
             <Sparkles className="w-3.5 h-3.5" />
             Effects
           </span>
-          <span className={`w-7 h-4 rounded-full transition-colors flex items-center px-0.5 ${effectsEnabled ? "bg-primary" : "bg-muted-foreground/30"}`}>
-            <span className={`w-3 h-3 rounded-full bg-white transition-transform ${effectsEnabled ? "translate-x-3" : "translate-x-0"}`} />
-          </span>
+          <Toggle on={effectsEnabled} />
         </button>
+
+        {/* ── Auth section ── */}
+        <div className="mt-2 pt-2 border-t border-border/40">
+          {isLoggedIn ? (
+            <button
+              type="button"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground"
+              onClick={onLogout}
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sign out
+            </button>
+          ) : showLogin ? (
+            <div className="space-y-1.5 px-1">
+              <input
+                type="text"
+                placeholder="Username"
+                value={user}
+                onChange={(e) => setUser(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                className="w-full h-7 px-2 text-xs rounded border border-border bg-background outline-none focus:ring-1 focus:ring-primary"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full h-7 px-2 text-xs rounded border border-border bg-background outline-none focus:ring-1 focus:ring-primary"
+              />
+              {err && <p className="text-[11px] text-destructive">Invalid credentials.</p>}
+              <div className="flex gap-1.5 pt-0.5">
+                <button
+                  type="button"
+                  onClick={handleLogin}
+                  className="flex-1 h-7 text-xs rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowLogin(false); setErr(false); setUser(""); setPass(""); }}
+                  className="h-7 px-2 text-xs rounded border border-border hover:bg-accent transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent transition-colors text-sm text-muted-foreground hover:text-foreground"
+              onClick={() => setShowLogin(true)}
+            >
+              <Lock className="w-3.5 h-3.5" />
+              Sign in to edit
+            </button>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
@@ -209,8 +303,9 @@ function SidebarItem({ id, label, active, onSelect, onDelete }: {
 
 const PAGE_SIZE = 10;
 
-function LandingPage({ effectsEnabled }: {
+function LandingPage({ effectsEnabled, isLoggedIn }: {
   effectsEnabled: boolean;
+  isLoggedIn: boolean;
 }) {
   const [posts, setPosts] = useState<BlogPost[]>(() => loadPosts());
   const [blogSidebarOpen, setBlogSidebarOpen] = useState(true);
@@ -308,13 +403,15 @@ function LandingPage({ effectsEnabled }: {
             <div className="p-3 border-b border-border flex items-center justify-between min-h-[48px]">
               <h2 className="font-semibold text-sidebar-foreground text-sm">Pages</h2>
               <div className="flex items-center gap-1">
-                <button
-                  type="button" onClick={createPost}
-                  className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  title="New page"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
+                {isLoggedIn && (
+                  <button
+                    type="button" onClick={createPost}
+                    className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    title="New page"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   type="button" onClick={() => setBlogSidebarOpen(false)}
                   className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -344,28 +441,30 @@ function LandingPage({ effectsEnabled }: {
                       >
                         {post.title}
                       </button>
-                      <div className="flex items-center gap-0.5 pr-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        <button
-                          type="button" onClick={() => movePost(post.id, -1)}
-                          disabled={sortedIdx === 0}
-                          className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 rounded transition-colors"
-                        >
-                          <ChevronUp className="w-3 h-3" />
-                        </button>
-                        <button
-                          type="button" onClick={() => movePost(post.id, 1)}
-                          disabled={sortedIdx === sorted.length - 1}
-                          className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 rounded transition-colors"
-                        >
-                          <ChevronDown className="w-3 h-3" />
-                        </button>
-                        <button
-                          type="button" onClick={() => deletePost(post.id)}
-                          className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-destructive rounded transition-colors"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
+                      {isLoggedIn && (
+                        <div className="flex items-center gap-0.5 pr-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <button
+                            type="button" onClick={() => movePost(post.id, -1)}
+                            disabled={sortedIdx === 0}
+                            className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 rounded transition-colors"
+                          >
+                            <ChevronUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button" onClick={() => movePost(post.id, 1)}
+                            disabled={sortedIdx === sorted.length - 1}
+                            className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 rounded transition-colors"
+                          >
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button" onClick={() => deletePost(post.id)}
+                            className="w-5 h-5 flex items-center justify-center text-muted-foreground hover:text-destructive rounded transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -411,22 +510,24 @@ function LandingPage({ effectsEnabled }: {
                   ) : (
                     <h2 className="text-lg font-semibold">{post.title}</h2>
                   )}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {editingPostId === post.id ? (
-                      <>
-                        <Button size="sm" className="h-7 text-xs gap-1.5" onClick={saveEdit}>
-                          <Eye className="w-3.5 h-3.5" /> Save
+                  {isLoggedIn && (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {editingPostId === post.id ? (
+                        <>
+                          <Button size="sm" className="h-7 text-xs gap-1.5" onClick={saveEdit}>
+                            <Eye className="w-3.5 h-3.5" /> Save
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={cancelEdit}>
+                            Cancel
+                          </Button>
+                        </>
+                      ) : (
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => startEdit(post)}>
+                          <Edit3 className="w-3.5 h-3.5" /> Edit
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={cancelEdit}>
-                          Cancel
-                        </Button>
-                      </>
-                    ) : (
-                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => startEdit(post)}>
-                        <Edit3 className="w-3.5 h-3.5" /> Edit
-                      </Button>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Post content */}
@@ -496,6 +597,22 @@ export default function Home() {
     if (typeof window !== "undefined") return localStorage.getItem("epe-effects") !== "false";
     return true;
   });
+  const [isLoggedIn, setIsLoggedIn] = useState(loadAuth);
+  const [iconHovered, setIconHovered] = useState(false);
+
+  const handleLogin = (u: string, p: string): boolean => {
+    if (u === ADMIN_USER && p === ADMIN_PASS) {
+      saveAuth(true);
+      setIsLoggedIn(true);
+      return true;
+    }
+    return false;
+  };
+
+  const handleLogout = () => {
+    saveAuth(false);
+    setIsLoggedIn(false);
+  };
 
   useEffect(() => {
     const root = document.documentElement;
@@ -582,15 +699,28 @@ export default function Home() {
       <header className="h-14 border-b border-border bg-card flex items-center px-4 shrink-0 gap-3">
         {/* Logo — hidden on home page (shown in hero), visible on editor pages */}
         {!isHome && (
-          <div className="group flex items-center gap-2 mr-3 cursor-default select-none shrink-0">
-            <AnimatedDodecagramIcon size={28} effectsEnabled={effectsEnabled} />
+          <button
+            type="button"
+            onClick={() => dispatch({ type: "SET_CATEGORY", category: "home" })}
+            className="flex items-center gap-2 mr-3 select-none shrink-0 rounded hover:opacity-75 transition-opacity"
+            title="Go to Home"
+          >
+            <div
+              onMouseEnter={() => setIconHovered(true)}
+              onMouseLeave={() => setIconHovered(false)}
+            >
+              <AnimatedDodecagramIcon size={28} effectsEnabled={effectsEnabled} />
+            </div>
             <div className="flex items-center overflow-hidden">
               <span className="font-bold text-sm tracking-tight">EPE</span>
-              <span className="text-sm font-medium overflow-hidden whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[180px] group-hover:opacity-100 transition-all duration-300 ease-out text-muted-foreground">
+              <span className={[
+                "text-sm font-medium overflow-hidden whitespace-nowrap transition-all duration-300 ease-out text-muted-foreground",
+                iconHovered ? "max-w-[180px] opacity-100" : "max-w-0 opacity-0",
+              ].join(" ")}>
                 &nbsp;— Elewental Palette Editor
               </span>
             </div>
-          </div>
+          </button>
         )}
 
         <nav className="flex items-center gap-1 flex-1 overflow-x-auto">
@@ -616,12 +746,13 @@ export default function Home() {
         <StylesMenu
           darkMode={darkMode} onDarkMode={setDarkMode}
           effectsEnabled={effectsEnabled} onEffects={setEffectsEnabled}
+          isLoggedIn={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}
         />
       </header>
 
       {/* ── Body ── */}
       {isHome ? (
-        <LandingPage effectsEnabled={effectsEnabled} />
+        <LandingPage effectsEnabled={effectsEnabled} isLoggedIn={isLoggedIn} />
       ) : (
         <div className="flex flex-1 overflow-hidden">
           {/* ── Left Sidebar ── */}

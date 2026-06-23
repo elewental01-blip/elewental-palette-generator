@@ -4,10 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, AlertCircle } from "lucide-react";
+import { Plus, Trash2, AlertCircle, Copy } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { generateTilesetsXml } from "@/lib/xml-generators";
+import { generateTilesetEntriesXml } from "@/lib/xml-generators";
 
 const SECTION_COLORS: Record<TilesetSectionType, string> = {
   terrain: "text-emerald-400 border-emerald-500/30 bg-emerald-500/8",
@@ -66,10 +66,10 @@ export function TilesetEditor() {
   };
 
   const copyXml = async () => {
-    const xml = generateTilesetsXml([activeItem]);
+    const xml = generateTilesetEntriesXml(activeItem);
     try {
       await navigator.clipboard.writeText(xml);
-      toast({ title: "Copied!", description: "Tileset XML copied to clipboard." });
+      toast({ title: "Copied!", description: "Entry tags copied to clipboard." });
     } catch {
       toast({ title: "Error", description: "Could not copy to clipboard.", variant: "destructive" });
     }
