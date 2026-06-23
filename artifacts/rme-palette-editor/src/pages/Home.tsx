@@ -124,7 +124,7 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
       viewBox="0 0 32 32"
       width={size}
       height={size}
-      style={{ display: "block", flexShrink: 0, cursor: effectsEnabled ? "pointer" : "default" }}
+      style={{ display: "block", flexShrink: 0, cursor: effectsEnabled ? "pointer" : "default", overflow: "visible" }}
       className={`${isBursting ? "epe-icon-animating" : ""} ${className}`}
       onMouseEnter={triggerBurst}
       onClick={triggerBurst}
@@ -500,7 +500,9 @@ function LandingPage({ effectsEnabled, isLoggedIn }: {
       <main ref={mainRef} className="flex-1 overflow-y-auto bg-background">
         {/* Hero — always at top */}
         <div className="flex flex-col items-center justify-center pt-14 pb-10 px-8">
-          <AnimatedDodecagramIcon size={92} effectsEnabled={effectsEnabled} className="mb-5 drop-shadow-lg" />
+          <div className="p-8 mb-2 flex items-center justify-center">
+            <AnimatedDodecagramIcon size={92} effectsEnabled={effectsEnabled} className="drop-shadow-lg" />
+          </div>
           <h1 className="text-4xl font-bold tracking-tight mb-1">Elewental Palette Editor</h1>
         </div>
 
