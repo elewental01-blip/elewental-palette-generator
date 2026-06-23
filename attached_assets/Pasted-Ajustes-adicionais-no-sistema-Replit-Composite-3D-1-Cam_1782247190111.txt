@@ -1,0 +1,83 @@
+Ajustes adicionais no sistema (Replit) — Composite 3D
+
+1. Camada ativa → destaque visual
+
+- A camada atualmente selecionada deve possuir destaque visual claro.
+
+- Ajuste necessário:
+  - Todas as bordas externas da camada ativa devem utilizar contorno amarelo.
+
+- O destaque deve acompanhar automaticamente a camada selecionada conforme o usuário navega entre os níveis.
+
+- Objetivo:
+  - Identificar imediatamente qual camada está sendo editada.
+  - Melhorar a leitura visual da pilha de andares.
+
+---
+
+2. Identificação dos andares (floors)
+
+- Cada camada exibida na pilha deve possuir uma identificação visual do andar correspondente.
+
+- Posicionamento:
+  - Exibir o número do floor no canto norte-direita da própria camada.
+
+- Utilizar a mesma lógica de andares do Remere's Map Editor:
+
+  Floor 0
+  Floor 1
+  Floor 2
+  Floor 3
+  Floor 4
+  Floor 5
+  Floor 6
+  Floor 7 (Ground / Z=0)
+  Floor 8
+  Floor 9
+  Floor 10
+  Floor 11
+  Floor 12
+  Floor 13
+  Floor 14
+  Floor 15
+
+- Referência de conversão:
+
+  Floor 7 = Z 0
+
+  Floor 6 = Z -1
+  Floor 5 = Z -2
+  Floor 4 = Z -3
+  ...
+
+  Floor 8 = Z +1
+  Floor 9 = Z +2
+  Floor 10 = Z +3
+  ...
+
+- O número exibido deve representar o floor real (0–15), e não apenas o valor relativo de Z.
+
+- A camada atualmente selecionada deve transitar visualmente entre esses floors, como um elevador se movendo pela pilha na diagonal, mantendo a representação espacial já existente.
+
+---
+
+3. Navegação da área do Tile Layout
+
+- Com o aumento da área ocupada pelas camadas empilhadas, estão sendo criadas barras de rolagem horizontal e vertical.
+
+- Esse não é o comportamento desejado.
+
+- Remover as barras de rolagem do Tile Layout expandido.
+
+- Em vez disso, permitir navegação por arrasto (pan):
+
+  - Clicar e segurar o botão do mouse em uma área vazia do Tile Layout.
+  - Arrastar para mover toda a visualização.
+  - Movimento livre em todas as direções.
+
+- O comportamento deve ser semelhante à navegação de canvas/mapas em editores gráficos.
+
+- Objetivo:
+  - Melhor aproveitamento do espaço.
+  - Navegação mais natural em layouts grandes.
+  - Evitar barras de rolagem ocupando área útil da interface.

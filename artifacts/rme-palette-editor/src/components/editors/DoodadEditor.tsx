@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useEditor } from "@/lib/context";
 import { DoodadItem, DoodadElementType } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -203,10 +203,17 @@ function Composite3DGrid({ tiles, onChange }: {
   const [editingCell, setEditing] = useState<{ x: number; y: number } | null>(null);
   const [inputVal, setInputVal]   = useState("");
 
+  // Pan state for drag-to-navigate
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const panRef = useRef({ isPanning: false, startX: 0, startY: 0, startPanX: 0, startPanY: 0 });
+
   const CELL    = CELL_SIZE[range];
   const gridMin = -range;
   const size    = range * 2 + 1;
   const zLabel  = (z: number) => `Z${z >= 0 ? "+" : ""}${z}`;
+  // RME floor convention: Floor 7 = Z0, Floor 6 = Z-1, Floor 8 = Z+1 → floor = 7 + z
+  const floorLabel = (z: number) => `Floor ${7 + z}`;
 
   const tilesOnZ  = (z: number) => tiles.filter((t) => t.z === z);
   const tileAt    = (x: number, y: number, z = activeZ) => tiles.find((t) => t.x === x && t.y === y && t.z === z);
@@ -219,6 +226,23 @@ function Composite3DGrid({ tiles, onChange }: {
   const commitEdit = (x: number, y: number) => { const id = parseInt(inputVal); if (!isNaN(id) && id > 0) onChange(tiles.map((t) => t.x === x && t.y === y && t.z === activeZ ? { ...t, itemId: id } : t)); cancel(); };
   const removeTile = (x: number, y: number) => { onChange(tiles.filter((t) => !(t.x === x && t.y === y && t.z === activeZ))); cancel(); };
 
+  // Reset pan when grid range changes
+  useEffect(() => { setPanX(0); setPanY(0); }, [range]);
+
+  // Pan handlers — ignore drags that start on interactive elements
+  const handlePanDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button, input, form")) return;
+    panRef.current = { isPanning: true, startX: e.clientX, startY: e.clientY, startPanX: panX, startPanY: panY };
+    e.preventDefault();
+  };
+  const handlePanMove = (e: React.MouseEvent) => {
+    if (!panRef.current.isPanning) return;
+    setPanX(panRef.current.startPanX + (e.clientX - panRef.current.startX));
+    setPanY(panRef.current.startPanY + (e.clientY - panRef.current.startY));
+  };
+  const handlePanEnd = () => { panRef.current.isPanning = false; };
+
   // Z layers to render: all layers in the full configured range (Z3D_MIN to Z3D_MAX)
   // Sort descending (highest Z first) so Z+ layers (SE/underground) render before Z- (NW/above)
   const renderLayers = Array.from({ length: Z3D_MAX - Z3D_MIN + 1 }, (_, i) => Z3D_MAX - i);
@@ -229,20 +253,33 @@ function Composite3DGrid({ tiles, onChange }: {
   // Z+ layers project SE → need padding on right/bottom
   const maxPosDz  = Math.max(0, ...dzValues);
 
-  // renderStack accepts a cell size so dialog can use larger cells
-  const renderStack = (cell: number) => {
+  // renderStack accepts a cell size and an optional className for the viewport container
+  const renderStack = (cell: number, viewportClassName = "h-80") => {
     const gridW      = size * cell + (size - 1) * 2;
-    const containerW = gridW + (maxNegDz + maxPosDz) * Z3D_STEP_X + 24;
-    const containerH = size * cell + (size - 1) * 2 + (maxNegDz + maxPosDz) * Z3D_STEP_Y + 24;
-    const baseLeft   = maxNegDz * Z3D_STEP_X + 12; // offset so NW layers have room
-    const baseTop    = maxNegDz * Z3D_STEP_Y + 12;
+    const containerW = gridW + (maxNegDz + maxPosDz) * Z3D_STEP_X + 40;
+    const containerH = size * cell + (size - 1) * 2 + (maxNegDz + maxPosDz) * Z3D_STEP_Y + 40;
+    const baseLeft   = maxNegDz * Z3D_STEP_X + 20;
+    const baseTop    = maxNegDz * Z3D_STEP_Y + 20;
 
     return (
-      <div className="overflow-auto">
-        <div style={{ position: "relative", width: containerW, height: containerH }}>
+      <div
+        className={["overflow-hidden rounded-lg select-none cursor-grab", viewportClassName].join(" ")}
+        style={{ touchAction: "none" }}
+        onMouseDown={handlePanDown}
+        onMouseMove={handlePanMove}
+        onMouseUp={handlePanEnd}
+        onMouseLeave={handlePanEnd}
+      >
+        <div style={{
+          position: "relative",
+          width: containerW,
+          height: containerH,
+          transform: `translate(${panX}px, ${panY}px)`,
+          willChange: "transform",
+        }}>
           {renderLayers.map((z) => {
-            const dz     = z - activeZ;
-            const adz    = Math.abs(dz);
+            const dz       = z - activeZ;
+            const adz      = Math.abs(dz);
             const isActive = dz === 0;
             // Z- (negative) → north-west (upper floors); Z+ (positive) → south-east (lower floors)
             const left = baseLeft + dz * Z3D_STEP_X;
@@ -254,23 +291,36 @@ function Composite3DGrid({ tiles, onChange }: {
             return (
               <div key={z} style={{
                 position: "absolute", left, top,
-                // Z- (upper floors) in front of active; Z+ (lower floors) behind active
                 zIndex: isActive ? 100 : dz < 0 ? 20 + adz : Math.max(5, 15 - dz),
                 opacity,
                 pointerEvents: isActive ? "auto" : "none",
                 transition: "opacity 0.15s",
               }}>
+                {/* Floor label — top-right corner of every layer */}
+                <div className="absolute -top-5 right-0 pointer-events-none">
+                  <span className={[
+                    "text-[9px] font-mono px-1.5 py-0.5 rounded",
+                    isActive
+                      ? "text-yellow-300 bg-yellow-400/20 border border-yellow-400/50 font-bold"
+                      : "text-muted-foreground/50 bg-sidebar/70",
+                  ].join(" ")}>
+                    {floorLabel(z)}
+                  </span>
+                </div>
+                {/* Tile count badge for non-active occupied layers */}
                 {!isActive && layerTiles.length > 0 && (
-                  <div className="absolute -top-4 left-0">
-                    <span className="text-[9px] font-mono text-muted-foreground/60 bg-sidebar/80 px-1 rounded">
-                      {zLabel(z)} ({layerTiles.length})
+                  <div className="absolute -top-5 left-0 pointer-events-none">
+                    <span className="text-[9px] font-mono text-muted-foreground/50 bg-sidebar/70 px-1 rounded">
+                      {layerTiles.length}t
                     </span>
                   </div>
                 )}
                 {isActive ? (
-                  <div className="inline-grid gap-0.5 rounded-lg border-2 border-orange-500/40 bg-sidebar p-1.5 shadow-md"
+                  <div
+                    className="inline-grid gap-0.5 rounded-lg border-2 border-yellow-400 bg-sidebar p-1.5 shadow-lg shadow-yellow-400/10"
                     style={{ gridTemplateColumns: `repeat(${size}, ${cell}px)` }}
-                    data-testid="composite-3d-tile-grid">
+                    data-testid="composite-3d-tile-grid"
+                  >
                     {buildGridCells(
                       size, gridMin, cell,
                       (x, y) => tileAt(x, y, activeZ) ? { itemId: tileAt(x, y, activeZ)!.itemId } : undefined,
@@ -368,11 +418,11 @@ function Composite3DGrid({ tiles, onChange }: {
       <Dialog open={dialogOpen} onOpenChange={(open) => { setDialog(open); if (!open) cancel(); }}>
         <DialogContent className="flex flex-col p-0 rounded-none" style={{ width: "100vw", height: "100vh", maxWidth: "100vw", maxHeight: "100vh" }}>
           <DialogHeader className="p-4 pb-3 shrink-0 border-b border-border">
-            <DialogTitle>Composite 3D — Tile Layout ({zLabel(activeZ)})</DialogTitle>
+            <DialogTitle>Composite 3D — Tile Layout ({zLabel(activeZ)} · {floorLabel(activeZ)})</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-auto p-4">
+          <div className="flex flex-col flex-1 overflow-hidden p-4 gap-3">
             {Controls()}
-            <div className="flex items-center gap-1.5 flex-wrap mb-4">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
               {RANGE_OPTIONS.map((r) => (
                 <button key={r} type="button" onClick={() => setRange(r)}
@@ -381,7 +431,7 @@ function Composite3DGrid({ tiles, onChange }: {
                 </button>
               ))}
             </div>
-            {renderStack(DIALOG_CELL_SIZE[range])}
+            {renderStack(DIALOG_CELL_SIZE[range], "flex-1")}
           </div>
         </DialogContent>
       </Dialog>
