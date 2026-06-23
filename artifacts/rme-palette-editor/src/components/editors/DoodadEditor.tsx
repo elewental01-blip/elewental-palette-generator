@@ -190,7 +190,7 @@ const Z3D_MIN = -7;
 const Z3D_MAX = 7;
 const Z3D_STEP_X = 22;
 const Z3D_STEP_Y = 14;
-const Z3D_VISIBLE = 3;
+
 
 function Composite3DGrid({ tiles, onChange }: {
   tiles: { x: number; y: number; z: number; itemId: number }[];
@@ -219,10 +219,9 @@ function Composite3DGrid({ tiles, onChange }: {
   const commitEdit = (x: number, y: number) => { const id = parseInt(inputVal); if (!isNaN(id) && id > 0) onChange(tiles.map((t) => t.x === x && t.y === y && t.z === activeZ ? { ...t, itemId: id } : t)); cancel(); };
   const removeTile = (x: number, y: number) => { onChange(tiles.filter((t) => !(t.x === x && t.y === y && t.z === activeZ))); cancel(); };
 
-  // Z layers to render: active + occupied ones within ±Z3D_VISIBLE range
+  // Z layers to render: all layers in the full configured range (Z3D_MIN to Z3D_MAX)
   // Sort descending (highest Z first) so Z+ layers (SE/underground) render before Z- (NW/above)
-  const renderLayers = [...new Set([activeZ, ...occupiedZ.filter((z) => Math.abs(z - activeZ) <= Z3D_VISIBLE)])]
-    .sort((a, b) => b - a);
+  const renderLayers = Array.from({ length: Z3D_MAX - Z3D_MIN + 1 }, (_, i) => Z3D_MAX - i);
 
   const dzValues  = renderLayers.map((z) => z - activeZ);
   // Z- layers project NW → need padding on left/top
