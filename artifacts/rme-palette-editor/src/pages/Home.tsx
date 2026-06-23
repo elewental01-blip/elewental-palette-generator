@@ -97,29 +97,27 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
   className?: string;
   externalTrigger?: number;
 }) {
-  const [bursting, setBursting] = useState(false);
+  const [burstId, setBurstId] = useState(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevTriggerRef = useRef(0);
 
   const triggerBurst = () => {
     if (!effectsEnabled) return;
-    if (bursting) return;
-    setBursting(true);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setBursting(false), 490);
+    setBurstId((id) => (id === 0 ? 1 : id + 1));
+    timeoutRef.current = setTimeout(() => setBurstId(0), 360);
   };
 
   useEffect(() => {
     if (externalTrigger && externalTrigger !== prevTriggerRef.current) {
       prevTriggerRef.current = externalTrigger;
-      if (!effectsEnabled) return;
-      setBursting(true);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => setBursting(false), 490);
+      triggerBurst();
     }
   }, [externalTrigger, effectsEnabled]);
 
   useEffect(() => () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); }, []);
+
+  const isBursting = burstId > 0;
 
   return (
     <svg
@@ -127,7 +125,7 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
       width={size}
       height={size}
       style={{ display: "block", flexShrink: 0, cursor: effectsEnabled ? "pointer" : "default" }}
-      className={`${bursting ? "epe-icon-animating" : ""} ${className}`}
+      className={`${isBursting ? "epe-icon-animating" : ""} ${className}`}
       onMouseEnter={triggerBurst}
       onClick={triggerBurst}
       aria-label="EPE icon"
@@ -135,7 +133,7 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
       <polygon className="epe-body" points={INNER_BODY} fill="#EAB308" />
       {TIPS.map((tip, i) => (
         <polygon
-          key={i}
+          key={`${i}-${burstId}`}
           className="epe-tip"
           points={tip.points}
           fill="#EAB308"

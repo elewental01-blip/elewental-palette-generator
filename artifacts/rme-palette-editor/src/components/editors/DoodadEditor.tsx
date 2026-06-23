@@ -17,7 +17,8 @@ type CompositeTile = { x: number; y: number; z?: number; itemId: number };
 
 const RANGE_OPTIONS = [3, 4, 6, 9] as const;
 type RangeOption = (typeof RANGE_OPTIONS)[number];
-const CELL_SIZE: Record<RangeOption, number> = { 3: 80, 4: 64, 6: 48, 9: 40 };
+const CELL_SIZE: Record<RangeOption, number>        = { 3: 80, 4: 64, 6: 48, 9: 40 };
+const DIALOG_CELL_SIZE: Record<RangeOption, number> = { 3: 116, 4: 92, 6: 70, 9: 56 };
 
 // ── Shared grid cell renderer (used by both Composite and Composite3D grids) ──
 
@@ -51,7 +52,8 @@ function buildGridCells(
         <div key={`${x}-${y}`} data-testid={`${testPrefix}-cell-${x}-${y}`}
           className={[
             "relative flex flex-col items-center justify-center rounded-md border transition-all select-none overflow-hidden",
-            tile ? "bg-primary/15 border-primary/50"
+            tile
+              ? (isOrigin ? "bg-primary/15 border-orange-500/60 ring-1 ring-orange-500/20" : "bg-primary/15 border-primary/50")
               : isAdd || isEdit ? "bg-accent/20 border-primary border-dashed"
               : isOrigin ? "bg-orange-500/15 border-orange-500/70 cursor-pointer hover:bg-orange-500/25 ring-1 ring-orange-500/20"
               : "bg-muted/10 border-border/20 cursor-pointer hover:bg-accent/20 hover:border-border/50",
@@ -150,11 +152,21 @@ function CompositeTileGrid({ tiles, onChange }: { tiles: { x: number; y: number;
         </div>
       </div>
       <Dialog open={dialogOpen} onOpenChange={(open) => { setDialog(open); if (!open) cancel(); }}>
-        <DialogContent className="w-fit max-w-[92vw] max-h-[92vh] overflow-auto">
+        <DialogContent className="w-fit max-w-[98vw] max-h-[96vh] overflow-auto">
           <DialogHeader><DialogTitle>Tile Layout — ±{range} grid (X/Y)</DialogTitle></DialogHeader>
+          <div className="flex items-center gap-1.5 flex-wrap mb-2">
+            <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
+            {RANGE_OPTIONS.map((r) => (
+              <button key={r} type="button" onClick={() => setRange(r)}
+                className={["px-2 py-0.5 text-xs rounded border transition-colors", range === r ? "bg-primary/20 border-primary text-primary font-semibold" : "border-border/40 text-muted-foreground hover:border-border hover:text-foreground"].join(" ")}>
+                ±{r}
+              </button>
+            ))}
+          </div>
           <div className="overflow-auto">
-            <div className="inline-grid gap-0.5 rounded-lg border border-border/50 bg-sidebar p-1.5" style={gridStyle}>
-              {buildGridCells(size, gridMin, CELL, tileAt, addingCell, editingCell, inputVal, setInputVal, startAdd, startEdit, commitAdd, commitEdit, removeTile, cancel)}
+            <div className="inline-grid gap-1 rounded-lg border border-border/50 bg-sidebar p-2"
+              style={{ gridTemplateColumns: `repeat(${size}, ${DIALOG_CELL_SIZE[range]}px)` }}>
+              {buildGridCells(size, gridMin, DIALOG_CELL_SIZE[range], tileAt, addingCell, editingCell, inputVal, setInputVal, startAdd, startEdit, commitAdd, commitEdit, removeTile, cancel)}
             </div>
           </div>
         </DialogContent>
@@ -167,9 +179,9 @@ function CompositeTileGrid({ tiles, onChange }: { tiles: { x: number; y: number;
 
 const Z3D_MIN = -7;
 const Z3D_MAX = 7;
-const Z3D_STEP_X = 22; // px offset right per Z decrease (south-east direction)
-const Z3D_STEP_Y = 14; // px offset down per Z decrease
-const Z3D_VISIBLE = 3; // adjacent Z layers shown on each side
+const Z3D_STEP_X = 22;
+const Z3D_STEP_Y = 14;
+const Z3D_VISIBLE = 3;
 
 function Composite3DGrid({ tiles, onChange }: {
   tiles: { x: number; y: number; z: number; itemId: number }[];
@@ -199,92 +211,93 @@ function Composite3DGrid({ tiles, onChange }: {
   const removeTile = (x: number, y: number) => { onChange(tiles.filter((t) => !(t.x === x && t.y === y && t.z === activeZ))); cancel(); };
 
   // Z layers to render: active + occupied ones within ±Z3D_VISIBLE range
+  // Sorted descending so highest Z (SE / behind) is rendered first
   const renderLayers = [...new Set([activeZ, ...occupiedZ.filter((z) => Math.abs(z - activeZ) <= Z3D_VISIBLE)])]
-    .sort((a, b) => a - b); // bottom (lowest z) to top (highest z)
+    .sort((a, b) => b - a);
 
-  // Maximum extent offsets from active layer for container sizing
-  const maxPosDz = Math.max(0, ...renderLayers.map((z) => z - activeZ)); // highest Z above active
-  const maxNegDz = Math.abs(Math.min(0, ...renderLayers.map((z) => z - activeZ))); // lowest Z below active
+  const dzValues = renderLayers.map((z) => z - activeZ);
+  // lower Z → north-west; higher Z → south-east
+  const maxNegDz = Math.abs(Math.min(0, ...dzValues)); // NW layers need left/top padding
+  const maxPosDz = Math.max(0, ...dzValues);           // SE layers need right/bottom padding
 
-  const gridW = size * CELL + (size - 1) * 2;
-  const containerW = gridW + (maxPosDz + maxNegDz) * Z3D_STEP_X + 24;
-  const containerH = gridW + (maxPosDz + maxNegDz) * Z3D_STEP_Y + 24;
-  const baseLeft   = maxPosDz * Z3D_STEP_X + 12;
-  const baseTop    = maxPosDz * Z3D_STEP_Y + 12;
+  // renderStack accepts a cell size so dialog can use larger cells
+  const renderStack = (cell: number) => {
+    const gridW      = size * cell + (size - 1) * 2;
+    const containerW = gridW + (maxNegDz + maxPosDz) * Z3D_STEP_X + 24;
+    const containerH = size * cell + (size - 1) * 2 + (maxNegDz + maxPosDz) * Z3D_STEP_Y + 24;
+    const baseLeft   = maxNegDz * Z3D_STEP_X + 12; // offset for NW (negative dz) layers
+    const baseTop    = maxNegDz * Z3D_STEP_Y + 12;
 
-  const renderStack = () => (
-    <div className="overflow-auto">
-      <div style={{ position: "relative", width: containerW, height: containerH }}>
-        {renderLayers.map((z) => {
-          const dz = z - activeZ;
-          const isActive = dz === 0;
-          const opacity = isActive ? 1 : Math.max(0.1, 0.55 - Math.abs(dz) * 0.13);
-          // higher Z → north-west (left/up); lower Z → south-east (right/down)
-          const left = baseLeft + dz * (-Z3D_STEP_X);
-          const top  = baseTop  + dz * (-Z3D_STEP_Y);
-          const layerTiles = tilesOnZ(z);
+    return (
+      <div className="overflow-auto">
+        <div style={{ position: "relative", width: containerW, height: containerH }}>
+          {renderLayers.map((z) => {
+            const dz = z - activeZ;
+            const isActive = dz === 0;
+            // lower Z (negative dz) → north-west; higher Z (positive dz) → south-east
+            const left = baseLeft + dz * Z3D_STEP_X;
+            const top  = baseTop  + dz * Z3D_STEP_Y;
+            const opacity = isActive ? 1 : Math.max(0.3, 0.78 - Math.abs(dz) * 0.14);
+            const layerTiles = tilesOnZ(z);
 
-          return (
-            <div key={z} style={{
-              position: "absolute", left, top,
-              zIndex: isActive ? 30 : 10 + (dz > 0 ? dz : 0),
-              opacity,
-              pointerEvents: isActive ? "auto" : "none",
-              transition: "opacity 0.15s",
-            }}>
-              {/* Layer label for non-active occupied layers */}
-              {!isActive && layerTiles.length > 0 && (
-                <div className="absolute -top-4 left-0">
-                  <span className="text-[9px] font-mono text-muted-foreground/50 bg-sidebar/80 px-1 rounded">
-                    {zLabel(z)} ({layerTiles.length})
-                  </span>
-                </div>
-              )}
-
-              {isActive ? (
-                /* Active layer — full editing grid */
-                <div className="inline-grid gap-0.5 rounded-lg border-2 border-orange-500/40 bg-sidebar p-1.5 shadow-md"
-                  style={{ gridTemplateColumns: `repeat(${size}, ${CELL}px)` }}
-                  data-testid="composite-3d-tile-grid">
-                  {buildGridCells(
-                    size, gridMin, CELL,
-                    (x, y) => tileAt(x, y, activeZ) ? { itemId: tileAt(x, y, activeZ)!.itemId } : undefined,
-                    addingCell, editingCell, inputVal, setInputVal,
-                    startAdd, startEdit, commitAdd, commitEdit, removeTile, cancel,
-                    zLabel(activeZ), "composite3d",
-                  )}
-                </div>
-              ) : (
-                /* Background layer — read-only silhouette */
-                <div className="inline-grid gap-0.5 rounded-lg border border-border/25 bg-sidebar/60 p-1.5"
-                  style={{ gridTemplateColumns: `repeat(${size}, ${CELL}px)` }}>
-                  {Array.from({ length: size }).map((_, rowIdx) =>
-                    Array.from({ length: size }).map((_, colIdx) => {
-                      const x = gridMin + colIdx;
-                      const y = gridMin + rowIdx;
-                      const hasTile = !!layerTiles.find((t) => t.x === x && t.y === y);
-                      const isOrigin = x === 0 && y === 0;
-                      return (
-                        <div key={`${x}-${y}`}
-                          className={["rounded border flex items-center justify-center",
-                            hasTile ? "bg-primary/20 border-primary/35"
-                            : isOrigin ? "bg-orange-500/8 border-orange-500/20"
-                            : "bg-muted/5 border-border/10",
-                          ].join(" ")}
-                          style={{ width: CELL, height: CELL }}>
-                          {hasTile && <span className="text-[8px] font-mono text-primary/50">{layerTiles.find((t) => t.x === x && t.y === y)!.itemId}</span>}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+            return (
+              <div key={z} style={{
+                position: "absolute", left, top,
+                zIndex: isActive ? 30 : 10 + Math.max(0, -dz), // NW (lower Z) layers in front
+                opacity,
+                pointerEvents: isActive ? "auto" : "none",
+                transition: "opacity 0.15s",
+              }}>
+                {!isActive && layerTiles.length > 0 && (
+                  <div className="absolute -top-4 left-0">
+                    <span className="text-[9px] font-mono text-muted-foreground/60 bg-sidebar/80 px-1 rounded">
+                      {zLabel(z)} ({layerTiles.length})
+                    </span>
+                  </div>
+                )}
+                {isActive ? (
+                  <div className="inline-grid gap-0.5 rounded-lg border-2 border-orange-500/40 bg-sidebar p-1.5 shadow-md"
+                    style={{ gridTemplateColumns: `repeat(${size}, ${cell}px)` }}
+                    data-testid="composite-3d-tile-grid">
+                    {buildGridCells(
+                      size, gridMin, cell,
+                      (x, y) => tileAt(x, y, activeZ) ? { itemId: tileAt(x, y, activeZ)!.itemId } : undefined,
+                      addingCell, editingCell, inputVal, setInputVal,
+                      startAdd, startEdit, commitAdd, commitEdit, removeTile, cancel,
+                      zLabel(activeZ), "composite3d",
+                    )}
+                  </div>
+                ) : (
+                  <div className="inline-grid gap-0.5 rounded-lg border border-border/50 bg-sidebar/70 p-1.5"
+                    style={{ gridTemplateColumns: `repeat(${size}, ${cell}px)` }}>
+                    {Array.from({ length: size }).map((_, rowIdx) =>
+                      Array.from({ length: size }).map((_, colIdx) => {
+                        const x = gridMin + colIdx;
+                        const y = gridMin + rowIdx;
+                        const hasTile = !!layerTiles.find((t) => t.x === x && t.y === y);
+                        const isOrigin = x === 0 && y === 0;
+                        return (
+                          <div key={`${x}-${y}`}
+                            className={["rounded border flex items-center justify-center",
+                              hasTile ? "bg-primary/25 border-primary/50"
+                              : isOrigin ? "bg-orange-500/10 border-orange-500/30"
+                              : "bg-muted/8 border-border/25",
+                            ].join(" ")}
+                            style={{ width: cell, height: cell }}>
+                            {hasTile && <span className="text-[8px] font-mono text-primary/60">{layerTiles.find((t) => t.x === x && t.y === y)!.itemId}</span>}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const Controls = () => (
     <div className="space-y-1.5 mb-3">
@@ -317,7 +330,7 @@ function Composite3DGrid({ tiles, onChange }: {
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-muted-foreground">
-        Perspective 45° — active layer <span className="text-orange-400 font-medium">north-west</span> · deeper Z layers south-east · click to add/edit
+        Perspectiva 45° — Z negativo flutua <span className="text-orange-400 font-medium">noroeste</span> · Z positivo afunda sudeste · clique para adicionar/editar
       </p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-xs text-muted-foreground font-medium shrink-0">Grid:</span>
@@ -332,9 +345,9 @@ function Composite3DGrid({ tiles, onChange }: {
         </Button>
       </div>
       {Controls()}
-      {renderStack()}
+      {renderStack(CELL)}
       <Dialog open={dialogOpen} onOpenChange={(open) => { setDialog(open); if (!open) cancel(); }}>
-        <DialogContent className="w-fit max-w-[96vw] max-h-[94vh] overflow-auto">
+        <DialogContent className="w-fit max-w-[98vw] max-h-[96vh] overflow-auto">
           <DialogHeader><DialogTitle>Composite 3D — Tile Layout ({zLabel(activeZ)})</DialogTitle></DialogHeader>
           {Controls()}
           <div className="flex items-center gap-1.5 flex-wrap mb-2">
@@ -346,7 +359,7 @@ function Composite3DGrid({ tiles, onChange }: {
               </button>
             ))}
           </div>
-          {renderStack()}
+          {renderStack(DIALOG_CELL_SIZE[range])}
         </DialogContent>
       </Dialog>
     </div>

@@ -1,0 +1,129 @@
+Tile Layout, ícone, UI e XML output
+
+
+
+1. Tile Layout → janela expandida
+
+
+
+- Quando o Tile Layout for expandido:
+
+  - deve abrir uma janela maior, tanto na horizontal quanto na vertical
+
+  - essa janela deve quase cobrir todo o app
+
+  - objetivo: aumentar espaço útil para edição dos campos
+
+
+
+- Comportamento:
+
+  - os campos do grid devem ficar mais espaçados
+
+  - melhor legibilidade e interação
+
+  - manter controles de navegação ativos dentro da janela expandida
+
+
+
+---
+
+
+
+2. Tile Layout → highlight do (0,0)
+
+
+
+- O tile na coordenada 0,0 não está mais com highlight visual.
+
+
+
+- Correção obrigatória:
+
+  - restaurar destaque visual no tile 0,0
+
+  - manter estilo diferenciado (ex: highlight laranja)
+
+  - deve permanecer visível independentemente do range ou modo ativo
+
+
+
+---
+
+
+
+3. Tile Layout 3D → inversão do eixo Z
+
+
+
+- Inverter comportamento do eixo Z:
+
+
+
+  - subir = Z negativo
+
+  - descer = Z positivo
+
+
+
+- Ajuste de visualização das layers:
+
+  - layers de cima e de baixo estão com transparência excessiva
+
+  - aumentar opacidade para melhorar percepção de profundidade
+
+  - garantir distinção clara entre camadas, de cima e de baixo também (ser possível ver a bordinha das camadas não-selecionadas tanto no nrote-esquerda quanto no sul-direita)
+
+
+
+---
+
+
+
+4. Ícone do menu → ajuste de animação
+
+
+
+- Problema atual:
+
+  - a animação do ícone possui delay na finalização
+
+  - isso impede reativação imediata ao passar o mouse novamente
+
+
+
+- Ajuste necessário:
+
+  - reduzir o tempo de finalização da animação, na parte final dela de encerramento
+
+  - garantir que o efeito possa ser reativado imediatamente após hover
+
+  - remover qualquer bloqueio de re-trigger causado por delay residual
+
+
+
+---
+
+
+
+5. XML Output → redimensionamento por drag
+
+
+
+- Adicionar funcionalidade de minimizar o painel xml output em todo o app, mantendo os ícones "copy to clipboard" e "download xml".
+
+
+
+- Comportamento:
+
+  - usuário pode minimizar e maximizar o painel
+
+  - o restante da interface deve se adaptar automaticamente
+
+  - quando minimizado mantém os ícones "copy to clipboard" e "download xml"
+
+
+
+- Aplicação:
+
+  - disponível em todo o sistema onde o XML output estiver presente
