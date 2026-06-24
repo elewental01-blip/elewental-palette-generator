@@ -1,4 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
+import {
+  DndContext, DragEndEvent, DragOverlay, DragStartEvent,
+  PointerSensor, useSensor, useSensors, closestCenter,
+} from "@dnd-kit/core";
+import {
+  SortableContext, useSortable, verticalListSortingStrategy, arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useEditor } from "@/lib/context";
 import { Category } from "@/lib/context";
 import { BorderEditor } from "@/components/editors/BorderEditor";
@@ -638,26 +646,61 @@ function StylesMenu({
 
 // ── Sidebar item (editor) ──────────────────────────────────────────────────────
 
-function SidebarItem({ id, label, active, onSelect, onDelete }: {
+function SidebarItem({ id, label, active, onSelect, onDelete, dragHandleProps, isDragging }: {
   id: string; label: string; active: boolean;
   onSelect: () => void; onDelete: (e: React.MouseEvent) => void;
+  dragHandleProps?: Record<string, unknown>;
+  isDragging?: boolean;
 }) {
   return (
     <div
       role="button" tabIndex={0}
-      className={["w-full text-left px-2.5 py-2 text-sm rounded-md flex items-center justify-between group transition-colors cursor-pointer",
+      className={["w-full text-left px-2.5 py-2 text-sm rounded-md flex items-center justify-between group transition-colors",
+        isDragging ? "opacity-40" : "cursor-pointer",
         active ? "bg-primary text-primary-foreground" : "hover:bg-sidebar-accent text-sidebar-foreground"].join(" ")}
       onClick={onSelect}
       onKeyDown={(e) => e.key === "Enter" && onSelect()}
       data-testid={`sidebar-item-${id}`}
     >
-      <span className="truncate text-xs">{label}</span>
+      {dragHandleProps && (
+        <span
+          {...dragHandleProps}
+          className="mr-1.5 shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
+          onClick={(e) => e.stopPropagation()}
+          title="Arrastar para reordenar"
+        >
+          <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+            <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
+            <circle cx="2" cy="7" r="1.5"/><circle cx="8" cy="7" r="1.5"/>
+            <circle cx="2" cy="12" r="1.5"/><circle cx="8" cy="12" r="1.5"/>
+          </svg>
+        </span>
+      )}
+      <span className="truncate text-xs flex-1">{label}</span>
       <button type="button" aria-label="Delete"
         className={["w-5 h-5 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded transition-colors shrink-0",
           active ? "text-primary-foreground hover:bg-primary-foreground/20" : "text-muted-foreground hover:text-destructive"].join(" ")}
         onClick={onDelete} data-testid={`button-delete-${id}`}>
         <Trash2 className="w-3 h-3" />
       </button>
+    </div>
+  );
+}
+
+function SortableSidebarItem({ id, label, active, onSelect, onDelete }: {
+  id: string; label: string; active: boolean;
+  onSelect: () => void; onDelete: (e: React.MouseEvent) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <SidebarItem
+        id={id} label={label} active={active}
+        onSelect={onSelect} onDelete={onDelete}
+        dragHandleProps={{ ...attributes, ...listeners }}
+        isDragging={isDragging}
+      />
     </div>
   );
 }
@@ -1182,6 +1225,56 @@ export default function Home() {
   const handleDeleteDoodad = (id: string, e: React.MouseEvent) => { e.stopPropagation(); dispatch({ type: "DELETE_DOODAD", id }); };
   const handleDeleteCarpet = (id: string, e: React.MouseEvent) => { e.stopPropagation(); dispatch({ type: "DELETE_CARPET", id }); };
 
+  // ── Drag-and-drop reordering ───────────────────────────────────────────────
+  const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const [dragActiveId, setDragActiveId] = useState<string | null>(null);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setDragActiveId(String(event.active.id));
+  };
+
+  const handleDragEndGrounds = (event: DragEndEvent) => {
+    setDragActiveId(null);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = state.grounds.map((g) => g.id);
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    dispatch({ type: "REORDER_GROUNDS", orderedIds: arrayMove(ids, oldIndex, newIndex) });
+  };
+
+  const handleDragEndWalls = (event: DragEndEvent) => {
+    setDragActiveId(null);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = state.walls.map((w) => w.id);
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    dispatch({ type: "REORDER_WALLS", orderedIds: arrayMove(ids, oldIndex, newIndex) });
+  };
+
+  const handleDragEndDoodads = (event: DragEndEvent) => {
+    setDragActiveId(null);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = state.doodads.map((d) => d.id);
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    dispatch({ type: "REORDER_DOODADS", orderedIds: arrayMove(ids, oldIndex, newIndex) });
+  };
+
+  const handleDragEndCarpets = (event: DragEndEvent) => {
+    setDragActiveId(null);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = state.carpets.map((c) => c.id);
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    dispatch({ type: "REORDER_CARPETS", orderedIds: arrayMove(ids, oldIndex, newIndex) });
+  };
+
+  const canReorder = state.activeCategory === "grounds" || state.activeCategory === "walls";
+
   const isDoodadTab = state.activeCategory === "doodads";
   const activeDoodad = isDoodadTab ? state.doodads.find((d) => d.id === state.activeItemId) : undefined;
   const activeCarpet = isDoodadTab ? state.carpets.find((c) => c.id === state.activeItemId) : undefined;
@@ -1312,11 +1405,18 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="px-1.5 pb-1 space-y-0.5">
-                      {state.doodads.map((item) => (
-                        <SidebarItem key={item.id} id={item.id} label={item.name || "Unnamed"} active={state.activeItemId === item.id}
-                          onSelect={() => dispatch({ type: "SET_ACTIVE_ITEM", id: item.id })}
-                          onDelete={(e) => handleDeleteDoodad(item.id, e)} />
-                      ))}
+                      <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEndDoodads}>
+                        <SortableContext items={state.doodads.map((d) => d.id)} strategy={verticalListSortingStrategy}>
+                          {state.doodads.map((item) => (
+                            <SortableSidebarItem key={item.id} id={item.id} label={item.name || "Unnamed"} active={state.activeItemId === item.id}
+                              onSelect={() => dispatch({ type: "SET_ACTIVE_ITEM", id: item.id })}
+                              onDelete={(e) => handleDeleteDoodad(item.id, e)} />
+                          ))}
+                        </SortableContext>
+                        <DragOverlay>
+                          {dragActiveId ? (() => { const it = state.doodads.find((d) => d.id === dragActiveId); return it ? <SidebarItem id={it.id} label={it.name || "Unnamed"} active={false} onSelect={() => {}} onDelete={() => {}} /> : null; })() : null}
+                        </DragOverlay>
+                      </DndContext>
                       {state.doodads.length === 0 && <p className="text-center px-2 py-2 text-xs text-muted-foreground">No doodads yet.</p>}
                     </div>
                     <div className="p-3 pb-1 flex items-center justify-between border-t border-border/40 mt-2">
@@ -1329,11 +1429,18 @@ export default function Home() {
                       </button>
                     </div>
                     <div className="px-1.5 pb-3 space-y-0.5">
-                      {state.carpets.map((item) => (
-                        <SidebarItem key={item.id} id={item.id} label={item.name || "Unnamed"} active={state.activeItemId === item.id}
-                          onSelect={() => dispatch({ type: "SET_ACTIVE_ITEM", id: item.id })}
-                          onDelete={(e) => handleDeleteCarpet(item.id, e)} />
-                      ))}
+                      <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEndCarpets}>
+                        <SortableContext items={state.carpets.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                          {state.carpets.map((item) => (
+                            <SortableSidebarItem key={item.id} id={item.id} label={item.name || "Unnamed"} active={state.activeItemId === item.id}
+                              onSelect={() => dispatch({ type: "SET_ACTIVE_ITEM", id: item.id })}
+                              onDelete={(e) => handleDeleteCarpet(item.id, e)} />
+                          ))}
+                        </SortableContext>
+                        <DragOverlay>
+                          {dragActiveId ? (() => { const it = state.carpets.find((c) => c.id === dragActiveId); return it ? <SidebarItem id={it.id} label={it.name || "Unnamed"} active={false} onSelect={() => {}} onDelete={() => {}} /> : null; })() : null}
+                        </DragOverlay>
+                      </DndContext>
                       {state.carpets.length === 0 && <p className="text-center px-2 py-2 text-xs text-muted-foreground">No carpets yet.</p>}
                     </div>
                   </ScrollArea>
@@ -1359,11 +1466,31 @@ export default function Home() {
                     </div>
                     <ScrollArea className="flex-1 p-1.5">
                       <div className="space-y-0.5">
-                        {currentItems.map((item) => (
-                          <SidebarItem key={item.id} id={item.id} label={getItemLabel(item)} active={state.activeItemId === item.id}
-                            onSelect={() => dispatch({ type: "SET_ACTIVE_ITEM", id: item.id })}
-                            onDelete={(e) => handleDelete(item.id, e)} />
-                        ))}
+                        {canReorder ? (
+                          <DndContext
+                            sensors={dndSensors}
+                            collisionDetection={closestCenter}
+                            onDragStart={handleDragStart}
+                            onDragEnd={state.activeCategory === "grounds" ? handleDragEndGrounds : handleDragEndWalls}
+                          >
+                            <SortableContext items={currentItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+                              {currentItems.map((item) => (
+                                <SortableSidebarItem key={item.id} id={item.id} label={getItemLabel(item)} active={state.activeItemId === item.id}
+                                  onSelect={() => dispatch({ type: "SET_ACTIVE_ITEM", id: item.id })}
+                                  onDelete={(e) => handleDelete(item.id, e)} />
+                              ))}
+                            </SortableContext>
+                            <DragOverlay>
+                              {dragActiveId ? (() => { const it = currentItems.find((i) => i.id === dragActiveId); return it ? <SidebarItem id={it.id} label={getItemLabel(it)} active={false} onSelect={() => {}} onDelete={() => {}} /> : null; })() : null}
+                            </DragOverlay>
+                          </DndContext>
+                        ) : (
+                          currentItems.map((item) => (
+                            <SidebarItem key={item.id} id={item.id} label={getItemLabel(item)} active={state.activeItemId === item.id}
+                              onSelect={() => dispatch({ type: "SET_ACTIVE_ITEM", id: item.id })}
+                              onDelete={(e) => handleDelete(item.id, e)} />
+                          ))
+                        )}
                         {currentItems.length === 0 && (
                           <div className="text-center p-4 text-xs text-muted-foreground">No items yet.<br />Click + to create one.</div>
                         )}

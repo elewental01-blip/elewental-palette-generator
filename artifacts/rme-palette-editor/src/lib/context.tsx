@@ -24,15 +24,19 @@ type Action =
   | { type: "ADD_GROUND"; ground: GroundItem }
   | { type: "UPDATE_GROUND"; id: string; ground: GroundItem }
   | { type: "DELETE_GROUND"; id: string }
+  | { type: "REORDER_GROUNDS"; orderedIds: string[] }
   | { type: "ADD_DOODAD"; doodad: DoodadItem }
   | { type: "UPDATE_DOODAD"; id: string; doodad: DoodadItem }
   | { type: "DELETE_DOODAD"; id: string }
+  | { type: "REORDER_DOODADS"; orderedIds: string[] }
   | { type: "ADD_CARPET"; carpet: CarpetItem }
   | { type: "UPDATE_CARPET"; id: string; carpet: CarpetItem }
   | { type: "DELETE_CARPET"; id: string }
+  | { type: "REORDER_CARPETS"; orderedIds: string[] }
   | { type: "ADD_WALL"; wall: WallItem }
   | { type: "UPDATE_WALL"; id: string; wall: WallItem }
   | { type: "DELETE_WALL"; id: string }
+  | { type: "REORDER_WALLS"; orderedIds: string[] }
   | { type: "ADD_TILESET"; tileset: TilesetItem }
   | { type: "UPDATE_TILESET"; id: string; tileset: TilesetItem }
   | { type: "DELETE_TILESET"; id: string }
@@ -90,6 +94,10 @@ function reducer(state: State, action: Action): State {
       return { ...state, grounds: state.grounds.map((g) => (g.id === action.id ? action.ground : g)) };
     case "DELETE_GROUND":
       return { ...state, grounds: state.grounds.filter((g) => g.id !== action.id), activeItemId: state.activeItemId === action.id ? null : state.activeItemId };
+    case "REORDER_GROUNDS": {
+      const map = new Map(state.grounds.map((g) => [g.id, g]));
+      return { ...state, grounds: action.orderedIds.flatMap((id) => { const g = map.get(id); return g ? [g] : []; }) };
+    }
 
     case "ADD_DOODAD":
       return { ...state, doodads: [...state.doodads, action.doodad], activeItemId: action.doodad.id };
@@ -97,6 +105,10 @@ function reducer(state: State, action: Action): State {
       return { ...state, doodads: state.doodads.map((d) => (d.id === action.id ? action.doodad : d)) };
     case "DELETE_DOODAD":
       return { ...state, doodads: state.doodads.filter((d) => d.id !== action.id), activeItemId: state.activeItemId === action.id ? null : state.activeItemId };
+    case "REORDER_DOODADS": {
+      const map = new Map(state.doodads.map((d) => [d.id, d]));
+      return { ...state, doodads: action.orderedIds.flatMap((id) => { const d = map.get(id); return d ? [d] : []; }) };
+    }
 
     case "ADD_CARPET":
       return { ...state, carpets: [...state.carpets, action.carpet], activeItemId: action.carpet.id };
@@ -104,6 +116,10 @@ function reducer(state: State, action: Action): State {
       return { ...state, carpets: state.carpets.map((c) => (c.id === action.id ? action.carpet : c)) };
     case "DELETE_CARPET":
       return { ...state, carpets: state.carpets.filter((c) => c.id !== action.id), activeItemId: state.activeItemId === action.id ? null : state.activeItemId };
+    case "REORDER_CARPETS": {
+      const map = new Map(state.carpets.map((c) => [c.id, c]));
+      return { ...state, carpets: action.orderedIds.flatMap((id) => { const c = map.get(id); return c ? [c] : []; }) };
+    }
 
     case "ADD_WALL":
       return { ...state, walls: [...state.walls, action.wall], activeItemId: action.wall.id };
@@ -111,6 +127,10 @@ function reducer(state: State, action: Action): State {
       return { ...state, walls: state.walls.map((w) => (w.id === action.id ? action.wall : w)) };
     case "DELETE_WALL":
       return { ...state, walls: state.walls.filter((w) => w.id !== action.id), activeItemId: state.activeItemId === action.id ? null : state.activeItemId };
+    case "REORDER_WALLS": {
+      const map = new Map(state.walls.map((w) => [w.id, w]));
+      return { ...state, walls: action.orderedIds.flatMap((id) => { const w = map.get(id); return w ? [w] : []; }) };
+    }
 
     case "ADD_TILESET":
       return { ...state, tilesets: [...state.tilesets, action.tileset], activeItemId: action.tileset.id };
