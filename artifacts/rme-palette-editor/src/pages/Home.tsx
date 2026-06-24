@@ -11,7 +11,7 @@ import { XmlPreview } from "@/components/XmlPreview";
 import {
   Layers, Image as ImageIcon, Box, BrickWall, Database, Home as HomeIcon,
   Plus, Trash2, ChevronLeft, ChevronRight, Moon, Sun, Sparkles, Settings2,
-  ChevronUp, ChevronDown, Edit3, Eye, FileText, Lock, LogOut, Search, RotateCcw,
+  ChevronUp, ChevronDown, Edit3, Eye, FileText, Lock, LogOut, Search, RotateCcw, Info,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -114,7 +114,12 @@ const DEFAULT_POSTS: BlogPost[] = [
 <p style="margin-bottom:0.75rem">Clique no botão <strong>?</strong> na barra superior para ativar o Modo Ajuda. Com ele ativo, passe o mouse sobre qualquer elemento da interface para ver sua descrição em um tooltip flutuante. A cor do tooltip e do botão segue o Color Theme ativo.</p>
 
 <h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">📋 XML Output</h3>
-<p>O painel de <strong>XML Output</strong> atualiza em tempo real conforme você preenche os campos de cada editor. Use o botão <strong>Copy</strong> para copiar o XML para a área de transferência, ou <strong>Download</strong> para salvar como arquivo <code>.xml</code>. A cor do texto XML segue o Color Theme selecionado.</p>`,
+<p>O painel de <strong>XML Output</strong> atualiza em tempo real conforme você preenche os campos de cada editor. Use o botão <strong>Copy</strong> para copiar o XML para a área de transferência, ou <strong>Download</strong> para salvar como arquivo <code>.xml</code>. A cor do texto XML segue o Color Theme selecionado.</p>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🗺 Sobre o EPE</h3>
+<p style="margin-bottom:0.75rem">O <strong>Elewental Palette Editor</strong> é uma ferramenta de criação e edição de assets para mapas do <strong>Remere's Map Editor (RME)</strong> — o editor de mapas de código aberto mais utilizado para jogos baseados no protocolo OpenTibia.</p>
+<p style="margin-bottom:0.75rem">O EPE foi criado para simplificar e acelerar o processo de configuração de paletas XML, eliminando a necessidade de editar arquivos de texto manualmente. Com uma interface visual e interativa, você pode montar estruturas complexas de brushes — com validação em tempo real — e exportar o XML pronto para uso no RME.</p>
+<p style="margin-bottom:0">Compatível com o <strong>RME v3.7 oficial</strong> e potencialmente com forks não oficiais que adotem o mesmo formato de paleta XML. O editor funciona inteiramente no navegador, sem necessidade de instalação ou conexão com servidor.</p>`,
   },
 ];
 
@@ -231,14 +236,30 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
   externalTrigger?: number;
 }) {
   const [burstId, setBurstId] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevTriggerRef = useRef(0);
+  const isHoveredRef = useRef(false);
 
   const triggerBurst = () => {
     if (!effectsEnabled) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsSpinning(false);
     setBurstId((id) => (id === 0 ? 1 : id + 1));
-    timeoutRef.current = setTimeout(() => setBurstId(0), 360);
+    timeoutRef.current = setTimeout(() => {
+      setBurstId(0);
+      if (isHoveredRef.current && effectsEnabled) setIsSpinning(true);
+    }, 360);
+  };
+
+  const handleMouseEnter = () => {
+    isHoveredRef.current = true;
+    triggerBurst();
+  };
+
+  const handleMouseLeave = () => {
+    isHoveredRef.current = false;
+    setIsSpinning(false);
   };
 
   useEffect(() => {
@@ -258,8 +279,9 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
       width={size}
       height={size}
       style={{ display: "block", flexShrink: 0, cursor: effectsEnabled ? "pointer" : "default", overflow: "visible" }}
-      className={`${isBursting ? "epe-icon-animating" : ""} ${className}`}
-      onMouseEnter={triggerBurst}
+      className={`${isBursting ? "epe-icon-animating" : ""} ${isSpinning ? "epe-icon-spinning" : ""} ${className}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onClick={triggerBurst}
       aria-label="EPE icon"
     >
@@ -274,6 +296,65 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
         />
       ))}
     </svg>
+  );
+}
+
+// ── Info menu ──────────────────────────────────────────────────────────────
+
+function InfoMenu() {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button type="button"
+          className="h-8 w-8 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+          title="Informações do sistema"
+          data-testid="button-info-menu"
+          data-help="Informações — versão, tecnologias, criador e como contribuir com o projeto">
+          <Info className="w-4 h-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="end">
+        {/* System info */}
+        <div>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Informações do Sistema</p>
+          <div className="space-y-1.5 text-xs">
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground shrink-0">Desenvolvido por</span>
+              <span className="font-medium text-right">Replit</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground shrink-0">Criador</span>
+              <span className="font-medium text-right">Daniel Camilo</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground shrink-0">Data</span>
+              <span className="font-medium text-right">06/06/2026</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Technical info */}
+        <div className="mt-3 pt-3 border-t border-border/40">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Tecnologias</p>
+          <div className="space-y-1 text-xs">
+            <p><span className="text-foreground font-medium">Frontend:</span> <span className="text-muted-foreground">React 18 + Vite + TypeScript</span></p>
+            <p><span className="text-foreground font-medium">UI:</span> <span className="text-muted-foreground">Tailwind CSS v4 + Radix UI</span></p>
+            <p><span className="text-foreground font-medium">Arquitetura:</span> <span className="text-muted-foreground">SPA, Context API, localStorage</span></p>
+            <p><span className="text-foreground font-medium">Compatibilidade:</span> <span className="text-muted-foreground">RME v3.7 oficial + forks compatíveis</span></p>
+          </div>
+        </div>
+
+        {/* Donations */}
+        <div className="mt-3 pt-3 border-t border-border/40">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Contribuições</p>
+          <p className="text-xs text-muted-foreground mb-2.5">Se você gostou do programa e quiser contribuir com qualquer valor:</p>
+          <div className="bg-primary/8 border border-primary/25 rounded-lg px-3 py-2.5">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">PIX</p>
+            <p className="text-xs font-mono font-semibold text-primary select-all cursor-text">dcep2020@gmail.com</p>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -1021,6 +1102,7 @@ export default function Home() {
         >
           <Search className="w-4 h-4" />
         </button>
+        <InfoMenu />
         <StylesMenu
           darkMode={darkMode} onDarkMode={setDarkMode}
           effectsEnabled={effectsEnabled} onEffects={setEffectsEnabled}

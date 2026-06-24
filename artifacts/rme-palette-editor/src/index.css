@@ -411,3 +411,9 @@ input[type="number"] {
   transform-box: view-box;
   transform-origin: center;
 }
+
+.epe-icon-spinning {
+  animation: epe-icon-spin-idle 3s linear infinite;
+  transform-box: view-box;
+  transform-origin: center;
+}
