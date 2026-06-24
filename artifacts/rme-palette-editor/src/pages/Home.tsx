@@ -212,6 +212,64 @@ const HELP_EN: Record<string, string> = {
   "Centro — tile central do tapete (posição 0,0 do padrão)": "Center — central carpet tile (position 0,0 of the pattern)",
 };
 
+// ── Slideshow icons for AnimatedDodecagramIcon hover ─────────────────────────
+
+const SLIDESHOW_ICONS: React.ReactNode[] = [
+  // tree
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <polygon points="16,9 11.5,16.5 20.5,16.5" />
+    <polygon points="16,12 12.5,18 19.5,18" style={{ opacity: 0.6 }} />
+    <rect x="14.5" y="16.5" width="3" height="4" rx="0.5" />
+  </g>,
+  // brick wall
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <rect x="11" y="12" width="4.5" height="2.2" rx="0.4"/>
+    <rect x="16.5" y="12" width="4.5" height="2.2" rx="0.4"/>
+    <rect x="11" y="15" width="2.5" height="2.2" rx="0.4"/>
+    <rect x="14.5" y="15" width="4" height="2.2" rx="0.4"/>
+    <rect x="19.5" y="15" width="1.5" height="2.2" rx="0.4"/>
+    <rect x="11" y="18" width="4.5" height="2.2" rx="0.4"/>
+    <rect x="16.5" y="18" width="4.5" height="2.2" rx="0.4"/>
+  </g>,
+  // door
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <path d="M13 22 L13 15.5 A3 3 0 0 1 19 15.5 L19 22 Z" />
+    <circle cx="17.7" cy="18.5" r="0.9" style={{ fill: "hsl(var(--background))" }} />
+  </g>,
+  // stone
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <ellipse cx="16.5" cy="18.5" rx="5.5" ry="3.8" />
+    <ellipse cx="12.5" cy="15.5" rx="3" ry="2.2" />
+  </g>,
+  // mountain
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <polygon points="16,9 9,22 23,22" />
+    <polygon points="21.5,14 18,22 25,22" style={{ opacity: 0.55 }} />
+  </g>,
+  // leaf
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <path d="M16 22 C9 20 9 10 16 9 C23 10 23 20 16 22 Z" transform="rotate(-20, 16, 16)" />
+    <line x1="16" y1="9" x2="16" y2="22" stroke="hsl(var(--background))" strokeWidth="1.1" fill="none" transform="rotate(-20, 16, 16)" />
+  </g>,
+  // flower
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <circle cx="16" cy="16" r="2.5" />
+    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" />
+    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(60, 16, 16)" />
+    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(120, 16, 16)" />
+    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(180, 16, 16)" />
+    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(240, 16, 16)" />
+    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(300, 16, 16)" />
+  </g>,
+  // cloud
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <circle cx="14" cy="18.5" r="3.2" />
+    <circle cx="18.5" cy="17" r="3.8" />
+    <circle cx="22.5" cy="19.5" r="2.5" />
+    <rect x="11" y="18.5" width="14" height="3.5" />
+  </g>,
+];
+
 // ── Animated Dodecagram Icon ───────────────────────────────────────────────────
 
 const TIPS = [
@@ -239,7 +297,11 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
 }) {
   const [burstId, setBurstId] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [slideVisible, setSlideVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slideIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const slideFadeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevTriggerRef = useRef(0);
   const isHoveredRef = useRef(false);
 
@@ -271,6 +333,29 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
     }
   }, [externalTrigger, effectsEnabled]);
 
+  useEffect(() => {
+    const active = effectsEnabled && (isSpinning || (burstId === 0 && externalRotating));
+    if (!active) {
+      setSlideVisible(false);
+      if (slideIntervalRef.current) { clearInterval(slideIntervalRef.current); slideIntervalRef.current = null; }
+      if (slideFadeRef.current) { clearTimeout(slideFadeRef.current); slideFadeRef.current = null; }
+      return;
+    }
+    setSlideIdx(0);
+    setSlideVisible(true);
+    slideIntervalRef.current = setInterval(() => {
+      setSlideVisible(false);
+      slideFadeRef.current = setTimeout(() => {
+        setSlideIdx((i) => (i + 1) % SLIDESHOW_ICONS.length);
+        setSlideVisible(true);
+      }, 300);
+    }, 1000);
+    return () => {
+      if (slideIntervalRef.current) { clearInterval(slideIntervalRef.current); slideIntervalRef.current = null; }
+      if (slideFadeRef.current) { clearTimeout(slideFadeRef.current); slideFadeRef.current = null; }
+    };
+  }, [effectsEnabled, isSpinning, burstId, externalRotating]);
+
   useEffect(() => () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); }, []);
 
   const isBursting = burstId > 0;
@@ -297,6 +382,16 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
 
         />
       ))}
+      {/* Slideshow overlay */}
+      <g
+        style={{
+          opacity: slideVisible ? 1 : 0,
+          transition: "opacity 0.3s ease",
+          pointerEvents: "none",
+        }}
+      >
+        {SLIDESHOW_ICONS[slideIdx]}
+      </g>
     </svg>
   );
 }
@@ -308,22 +403,18 @@ function InfoMenu() {
     <Popover>
       <PopoverTrigger asChild>
         <button type="button"
-          className="h-8 w-8 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+          className="h-9 w-9 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
           title="Informações do sistema"
           data-testid="button-info-menu"
           data-help="Informações — versão, tecnologias, criador e como contribuir com o projeto">
-          <Info className="w-4 h-4" />
+          <Info className="w-[18px] h-[18px]" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" align="end">
-        {/* System info */}
+        {/* System info — order: Criador / Data / Desenvolvido por */}
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Informações do Sistema</p>
           <div className="space-y-1.5 text-xs">
-            <div className="flex justify-between gap-2">
-              <span className="text-muted-foreground shrink-0">Desenvolvido por</span>
-              <span className="font-medium text-right">Replit</span>
-            </div>
             <div className="flex justify-between gap-2">
               <span className="text-muted-foreground shrink-0">Criador</span>
               <span className="font-medium text-right">Daniel Camilo</span>
@@ -331,6 +422,10 @@ function InfoMenu() {
             <div className="flex justify-between gap-2">
               <span className="text-muted-foreground shrink-0">Data</span>
               <span className="font-medium text-right">06/06/2026</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground shrink-0">Desenvolvido por</span>
+              <span className="font-medium text-right">Replit</span>
             </div>
           </div>
         </div>
@@ -344,6 +439,20 @@ function InfoMenu() {
             <p><span className="text-foreground font-medium">Arquitetura:</span> <span className="text-muted-foreground">SPA, Context API, localStorage</span></p>
             <p><span className="text-foreground font-medium">Compatibilidade:</span> <span className="text-muted-foreground">RME v3.7 oficial + forks compatíveis</span></p>
           </div>
+        </div>
+
+        {/* Replit platform + referral */}
+        <div className="mt-3 pt-3 border-t border-border/40">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Plataforma</p>
+          <p className="text-xs text-muted-foreground mb-2">Crie o seu próprio aplicativo ou ferramenta com IA no Replit — e aproveite descontos na assinatura usando o link abaixo:</p>
+          <a
+            href="https://replit.com/refer/elewental01"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs font-mono font-semibold text-primary hover:underline break-all"
+          >
+            replit.com/refer/elewental01
+          </a>
         </div>
 
         {/* Donations */}
@@ -397,9 +506,9 @@ function StylesMenu({
     <Popover onOpenChange={(open) => { if (!open) { setShowLogin(false); setErr(false); } }}>
       <PopoverTrigger asChild>
         <button type="button"
-          className="h-8 w-8 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+          className="h-9 w-9 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
           title="Display settings" data-testid="button-styles-menu">
-          <Settings2 className="w-4 h-4" />
+          <Settings2 className="w-[18px] h-[18px]" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-2" align="end">
@@ -1031,7 +1140,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background text-foreground">
       {/* ── Header ── */}
-      <header className="h-14 border-b border-border bg-card flex items-center px-4 shrink-0 gap-3">
+      <header className="h-16 border-b border-border bg-card flex items-center px-5 shrink-0 gap-3">
         {/* Logo — hidden on home page (shown in hero), visible on editor pages */}
         {!isHome && (
           <button
@@ -1045,16 +1154,16 @@ export default function Home() {
               onMouseEnter={() => setIconHovered(true)}
               onMouseLeave={() => setIconHovered(false)}
             >
-              <AnimatedDodecagramIcon size={28} effectsEnabled={effectsEnabled} externalTrigger={iconTrigger} externalRotating={iconRotating} />
+              <AnimatedDodecagramIcon size={32} effectsEnabled={effectsEnabled} externalTrigger={iconTrigger} externalRotating={iconRotating} />
             </div>
             <div
               className="flex items-center overflow-hidden"
               onMouseEnter={() => { setIconTrigger((t) => t + 1); setIconRotating(true); }}
               onMouseLeave={() => setIconRotating(false)}
             >
-              <span className="font-bold text-sm tracking-tight">EPE</span>
+              <span className="font-bold text-base tracking-tight">EPE</span>
               <span className={[
-                "text-sm font-medium overflow-hidden whitespace-nowrap transition-all duration-300 ease-out text-muted-foreground",
+                "text-base font-medium overflow-hidden whitespace-nowrap transition-all duration-300 ease-out text-muted-foreground",
                 iconHovered ? "max-w-[180px] opacity-100" : "max-w-0 opacity-0",
               ].join(" ")}>
                 &nbsp;— Elewental Palette Editor
@@ -1096,7 +1205,7 @@ export default function Home() {
           type="button"
           onClick={() => setHelpMode((m) => !m)}
           className={[
-            "w-8 h-8 rounded flex items-center justify-center transition-colors shrink-0",
+            "w-9 h-9 rounded flex items-center justify-center transition-colors shrink-0",
             helpMode
               ? "bg-primary/20 text-primary border border-primary/30"
               : "text-muted-foreground hover:text-foreground hover:bg-accent",
@@ -1104,7 +1213,7 @@ export default function Home() {
           title={helpMode ? "Sair do modo ajuda" : "Modo ajuda — passe o mouse sobre elementos para ver descrições"}
           data-help="Modo Ajuda — quando ativo, passe o mouse sobre qualquer elemento da interface para ver sua descrição"
         >
-          <Search className="w-4 h-4" />
+          <Search className="w-[18px] h-[18px]" />
         </button>
         <InfoMenu />
         <StylesMenu

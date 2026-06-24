@@ -1,0 +1,158 @@
+1. Top bar → escala geral da interface
+
+
+
+- O ícone, título e menus do topo devem ser levemente aumentados.
+
+
+
+- Ajuste:
+
+  - aumento aproximado de 10%
+
+  - sem distorcer layout
+
+  - manter alinhamento e espaçamento consistentes
+
+
+
+- Objetivo:
+
+  - melhorar legibilidade e presença visual do header sem comprometer densidade da UI
+
+
+
+---
+
+
+
+2. Ícone (menu + Home Page) → animação com slideshow interno
+
+
+
+- Durante o efeito de rotação ao hover:
+
+
+
+  - o ícone deve exibir um “slide” interno de ícones no centro.
+
+
+
+- Comportamento:
+
+  - enquanto o ícone estiver em animação ativa:
+
+    - ícones de elementos de mapa devem passar no centro do ícone em sequência
+
+    - efeito tipo carrossel/slideshow contínuo
+
+
+
+- Ícones sugeridos:
+
+  - árvore
+
+  - tijolo
+
+  - porta
+
+  - pedra
+
+  - montanha
+
+  - folha
+
+  - flor
+
+  - nuvem
+
+  - repetição suave da sequência, um por segundo
+
+
+
+- Regras:
+
+  - o slideshow só aparece durante o hover ativo
+
+  - deve parar imediatamente ao remover o mouse, efeito fade out ao sumir.
+
+  - deve manter sincronia com a rotação do ícone
+
+
+
+- Estilo visual dos ícones:
+
+  - design clean (sem detalhes internos)
+
+  - formas simples e minimalistas
+
+  - leitura imediata (silhueta/pictograma)
+
+
+
+- Cor dos ícones:
+
+  - totalmente dinâmica baseada no Color Theme
+
+
+
+  Regras de aplicação:
+
+  - Dark Mode:
+
+    - mesma cor da fonte do EPE no menu no dark mode
+
+  - Light Mode:
+
+    - mesma cor da fonte do EPE no menu no light mode
+
+
+
+
+
+---
+
+
+
+3. Informações (menu “i”) → adição de referência Replit
+
+
+
+- No menu de informações (i), informações do sistema, onde tem informações sobre o criador, mover para acima de "contribuições", e abaixo de "tecnologias", entre "contribuições e "tecnologias. 
+
+Alterar ordem das informações:
+
+
+
+"Informações do Sistema
+
+Criador Daniel Camilo
+
+Data06/06/2026
+
+Desenvolvido por Replit"
+
+
+
+- Abaixo de "Desenvolvido por Replit" adicionar seção referente ao Replit abaixo:
+
+- Conteúdo:
+
+  - Incluir link de indicação (encurtado):
+
+    https://replit.com/refer/elewental01
+
+
+
+- Texto sugerido (estruturado):
+
+  - “Crie você também seu próprio aplicativo ou ferramenta. Use este link para descontos na assinatura de um plano.” (melhore essa frase)
+
+
+
+- Posicionamento:
+
+  - dentro da seção de informações da plataforma Replit
+
+  - junto das demais referências técnicas e institucionais
+
