@@ -170,7 +170,7 @@ const HELP_EN: Record<string, string> = {
   "Tilesets — agrupe brushes e itens em paletas para o RME": "Tilesets — group brushes and items into RME palettes",
   "Grounds — edite terrain brushes com items, borders e friends": "Grounds — edit terrain brushes with items, borders, and friends",
   "Borders — configure as 12 direções de borda de cada terrain": "Borders — configure the 12 border directions for each terrain",
-  "Grounds e Borders — relacionados: brushes de ground definem quais borders (transições de borda) serão usados automaticamente em cada terrain": "Grounds & Borders — related: ground brushes define which borders (edge transitions) are automatically applied to each terrain",
+  "Grounds e Borders possuem relação funcional entre si.": "Grounds and Borders have a functional relationship with each other.",
   "Doodads / Carpets — edite doodad brushes (Simple, Composite, 3D) e tapetes": "Doodads / Carpets — edit doodad brushes (Simple, Composite, 3D) and carpets",
   "Walls — configure muros com tipos horizontal, vertical, corner e pole": "Walls — configure walls with horizontal, vertical, corner, and pole types",
   "Modo Ajuda — quando ativo, passe o mouse sobre qualquer elemento da interface para ver sua descrição": "Help Mode — when active, hover over any UI element to see its description",
@@ -1144,17 +1144,14 @@ export default function Home() {
             className="flex items-center gap-2 mr-3 select-none shrink-0 rounded hover:opacity-75 transition-opacity"
             title="Go to Home"
             data-help="Logo EPE — clique para voltar à página inicial do Elewental Palette Editor"
+            onMouseEnter={() => { setIconTrigger((t) => t + 1); setIconRotating(true); setIconHovered(true); }}
+            onMouseLeave={() => { setIconRotating(false); setIconHovered(false); }}
           >
-            <div
-              onMouseEnter={() => setIconHovered(true)}
-              onMouseLeave={() => setIconHovered(false)}
-            >
+            <div>
               <AnimatedDodecagramIcon size={32} effectsEnabled={effectsEnabled} externalTrigger={iconTrigger} externalRotating={iconRotating} />
             </div>
             <div
               className="flex items-center overflow-hidden"
-              onMouseEnter={() => { setIconTrigger((t) => t + 1); setIconRotating(true); setIconHovered(true); }}
-              onMouseLeave={() => { setIconRotating(false); setIconHovered(false); }}
             >
               <span className="font-bold text-base tracking-tight">EPE</span>
               <span className={[
@@ -1176,7 +1173,7 @@ export default function Home() {
               <Button
                 variant={isActive ? "secondary" : "ghost"}
                 size="sm"
-                className={`gap-2 shrink-0 ${isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+                className={`gap-2 shrink-0 ${isActive ? "bg-secondary text-secondary-foreground" : cat.id === "tilesets" ? "text-primary" : "text-muted-foreground"}`}
                 onClick={() => dispatch({ type: "SET_CATEGORY", category: cat.id })}
                 data-testid={`tab-${cat.id}`}
                 data-help={
@@ -1194,10 +1191,9 @@ export default function Home() {
               </Button>
               {cat.id === "grounds" && (
                 <span
-                  aria-hidden
-                  data-help="Grounds e Borders — relacionados: brushes de ground definem quais borders (transições de borda) serão usados automaticamente em cada terrain"
-                  className="select-none pointer-events-none shrink-0 text-[10px] font-bold px-0.5"
-                  style={{ color: "hsl(var(--primary))", lineHeight: 1, opacity: 0.85 }}
+                  data-help="Grounds e Borders possuem relação funcional entre si."
+                  className="select-none pointer-events-auto shrink-0 text-xs font-bold px-1"
+                  style={{ color: "hsl(var(--primary))", lineHeight: 1, opacity: 0.9, cursor: "default", userSelect: "none" }}
                 >
                   ↔
                 </span>

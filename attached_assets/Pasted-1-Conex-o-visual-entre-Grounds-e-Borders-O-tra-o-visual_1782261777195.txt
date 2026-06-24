@@ -1,0 +1,170 @@
+1. Conexão visual entre Grounds e Borders
+
+
+
+- O traço visual criado entre os menus "Grounds" e "Borders" está muito pequeno.
+
+
+
+- Ajuste necessário:
+
+  - aumentar levemente seu comprimento horizontal
+
+  - aproximar visualmente o traço dos dois menus
+
+  - reforçar a percepção de conexão entre eles
+
+
+
+- O elemento continua sendo:
+
+  - apenas visual
+
+  - não clicável
+
+  - sem impacto na navegação ou comportamento dos menus
+
+
+
+- Help Mode:
+
+  - atualmente a lupa não reconhece esse elemento
+
+
+
+- Adicionar descrição específica ao passar o mouse sobre o traço:
+
+
+
+  "Grounds e Borders possuem relação funcional entre si."
+
+
+
+- O texto deve respeitar o idioma selecionado no Help Mode.
+
+
+
+---
+
+
+
+2. Menu Tilesets → destaque visual exclusivo
+
+
+
+- Apenas o menu "Tilesets" deve possuir tratamento visual diferenciado.
+
+
+
+- Aplicar ao:
+
+  - ícone do menu Tilesets
+
+  - texto do menu Tilesets
+
+
+
+- Cor padrão:
+
+  - amarelo (cor principal atual do app)
+
+
+
+- Comportamento:
+
+  - deve acompanhar o Color Theme selecionado
+
+  - atualizar dinamicamente quando a cor do sistema for alterada
+
+
+
+- Os demais menus devem permanecer exatamente como estão hoje.
+
+
+
+- Não aplicar esse comportamento a:
+
+  - Grounds
+
+  - Borders
+
+  - Doodads
+
+  - Walls
+
+  - Home
+
+  - outros menus
+
+
+
+- Objetivo:
+
+  - destacar visualmente o menu responsável pela geração e organização de tilesets
+
+
+
+---
+
+
+
+3. Área de hover do ícone superior (Home Shortcut)
+
+
+
+- Atualmente o efeito do ícone superior é ativado apenas ao passar o mouse diretamente sobre:
+
+  - o ícone
+
+  - o texto EPE
+
+
+
+- Ajuste necessário:
+
+
+
+  - considerar toda a área clicável que leva para a Home Page como uma única região interativa
+
+
+
+- O efeito e expansão do texto "elewental palette editor" deve ser ativado quando o mouse estiver:
+
+
+
+  - sobre o ícone
+
+  - sobre o texto EPE
+
+  - no pequeno espaço entre ambos
+
+  - em qualquer área clicável pertencente ao atalho da Home
+
+
+
+- Comportamento esperado:
+
+
+
+  - toda a região funciona como um único componente
+
+  - o hover ativa:
+
+    - expansão do título
+
+    - animação do ícone
+
+    - slideshow interno dos ícones
+
+
+
+- Objetivo:
+
+  - tornar a interação mais natural
+
+  - evitar zonas mortas entre o ícone e o texto
+
+  - melhorar a experiência de navegação para a Home Page
+
+
+
