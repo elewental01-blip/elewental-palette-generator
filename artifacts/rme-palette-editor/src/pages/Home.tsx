@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useEditor } from "@/lib/context";
 import { Category } from "@/lib/context";
 import { BorderEditor } from "@/components/editors/BorderEditor";
@@ -169,6 +169,7 @@ const HELP_EN: Record<string, string> = {
   "Tilesets — agrupe brushes e itens em paletas para o RME": "Tilesets — group brushes and items into RME palettes",
   "Grounds — edite terrain brushes com items, borders e friends": "Grounds — edit terrain brushes with items, borders, and friends",
   "Borders — configure as 12 direções de borda de cada terrain": "Borders — configure the 12 border directions for each terrain",
+  "Grounds e Borders — relacionados: brushes de ground definem quais borders (transições de borda) serão usados automaticamente em cada terrain": "Grounds & Borders — related: ground brushes define which borders (edge transitions) are automatically applied to each terrain",
   "Doodads / Carpets — edite doodad brushes (Simple, Composite, 3D) e tapetes": "Doodads / Carpets — edit doodad brushes (Simple, Composite, 3D) and carpets",
   "Walls — configure muros com tipos horizontal, vertical, corner e pole": "Walls — configure walls with horizontal, vertical, corner, and pole types",
   "Modo Ajuda — quando ativo, passe o mouse sobre qualquer elemento da interface para ver sua descrição": "Help Mode — when active, hover over any UI element to see its description",
@@ -214,6 +215,8 @@ const HELP_EN: Record<string, string> = {
 
 // ── Slideshow icons for AnimatedDodecagramIcon hover ─────────────────────────
 
+// Icon set: tree, wall, door, trail, map, flower, stone, cloud
+// Rendered outside the rotating SVG — they stay upright during spin
 const SLIDESHOW_ICONS: React.ReactNode[] = [
   // tree
   <g style={{ fill: "hsl(var(--foreground))" }}>
@@ -221,7 +224,7 @@ const SLIDESHOW_ICONS: React.ReactNode[] = [
     <polygon points="16,12 12.5,18 19.5,18" style={{ opacity: 0.6 }} />
     <rect x="14.5" y="16.5" width="3" height="4" rx="0.5" />
   </g>,
-  // brick wall
+  // wall (brick)
   <g style={{ fill: "hsl(var(--foreground))" }}>
     <rect x="11" y="12" width="4.5" height="2.2" rx="0.4"/>
     <rect x="16.5" y="12" width="4.5" height="2.2" rx="0.4"/>
@@ -236,20 +239,17 @@ const SLIDESHOW_ICONS: React.ReactNode[] = [
     <path d="M13 22 L13 15.5 A3 3 0 0 1 19 15.5 L19 22 Z" />
     <circle cx="17.7" cy="18.5" r="0.9" style={{ fill: "hsl(var(--background))" }} />
   </g>,
-  // stone
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <ellipse cx="16.5" cy="18.5" rx="5.5" ry="3.8" />
-    <ellipse cx="12.5" cy="15.5" rx="3" ry="2.2" />
+  // trail (winding path)
+  <g style={{ fill: "none", stroke: "hsl(var(--foreground))", strokeWidth: 2.2, strokeLinecap: "round" }}>
+    <path d="M14 22 C11 19 18 17 17 14 C16 11 13 10 15 8" />
   </g>,
-  // mountain
+  // map (folded paper)
   <g style={{ fill: "hsl(var(--foreground))" }}>
-    <polygon points="16,9 9,22 23,22" />
-    <polygon points="21.5,14 18,22 25,22" style={{ opacity: 0.55 }} />
-  </g>,
-  // leaf
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <path d="M16 22 C9 20 9 10 16 9 C23 10 23 20 16 22 Z" transform="rotate(-20, 16, 16)" />
-    <line x1="16" y1="9" x2="16" y2="22" stroke="hsl(var(--background))" strokeWidth="1.1" fill="none" transform="rotate(-20, 16, 16)" />
+    <rect x="10" y="11" width="12" height="10" rx="0.5"/>
+    <line x1="14.5" y1="11" x2="14.5" y2="21" stroke="hsl(var(--background))" strokeWidth="0.9"/>
+    <line x1="18.5" y1="11" x2="18.5" y2="21" stroke="hsl(var(--background))" strokeWidth="0.9"/>
+    <line x1="10" y1="15" x2="22" y2="15" stroke="hsl(var(--background))" strokeWidth="0.9"/>
+    <line x1="10" y1="18" x2="22" y2="18" stroke="hsl(var(--background))" strokeWidth="0.9"/>
   </g>,
   // flower
   <g style={{ fill: "hsl(var(--foreground))" }}>
@@ -260,6 +260,11 @@ const SLIDESHOW_ICONS: React.ReactNode[] = [
     <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(180, 16, 16)" />
     <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(240, 16, 16)" />
     <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(300, 16, 16)" />
+  </g>,
+  // stone
+  <g style={{ fill: "hsl(var(--foreground))" }}>
+    <ellipse cx="16.5" cy="18.5" rx="5.5" ry="3.8" />
+    <ellipse cx="12.5" cy="15.5" rx="3" ry="2.2" />
   </g>,
   // cloud
   <g style={{ fill: "hsl(var(--foreground))" }}>
@@ -287,6 +292,11 @@ const TIPS = [
   { points: "8.86,8.86 9,3.88 13.39,6.24",       dx: -0.5,   dy: -0.866 },
 ];
 const INNER_BODY = "18.61,6.24 23.14,8.86 25.76,13.39 25.76,18.61 23.14,23.14 18.61,25.76 13.39,25.76 8.86,23.14 6.24,18.61 6.24,13.39 8.86,8.86 13.39,6.24";
+
+function makeFaviconSvg(primaryHsl: string): string {
+  const tips = TIPS.map((t) => `<polygon points="${t.points}" fill="${primaryHsl}"/>`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><polygon points="${INNER_BODY}" fill="${primaryHsl}"/>${tips}</svg>`;
+}
 
 function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = "", externalTrigger, externalRotating = false }: {
   size?: number;
@@ -361,17 +371,34 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
   const isBursting = burstId > 0;
 
   return (
-    <svg
-      viewBox="0 0 32 32"
-      width={size}
-      height={size}
-      style={{ display: "block", flexShrink: 0, cursor: effectsEnabled ? "pointer" : "default", overflow: "visible" }}
-      className={`${isBursting ? "epe-icon-animating" : ""} ${(isSpinning || (!isBursting && externalRotating)) ? "epe-icon-spinning" : ""} ${className}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={triggerBurst}
-      aria-label="EPE icon"
-    >
+    <div style={{ position: "relative", width: size, height: size, display: "inline-block", flexShrink: 0 }}>
+      {/* Slideshow overlay — outside the rotating SVG so icons stay upright */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: slideVisible ? 1 : 0,
+          transition: "opacity 0.3s ease",
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      >
+        <svg viewBox="0 0 32 32" width={size} height={size}>
+          {SLIDESHOW_ICONS[slideIdx]}
+        </svg>
+      </div>
+      <svg
+        viewBox="0 0 32 32"
+        width={size}
+        height={size}
+        style={{ display: "block", cursor: effectsEnabled ? "pointer" : "default", overflow: "visible" }}
+        className={`${isBursting ? "epe-icon-animating" : ""} ${(isSpinning || (!isBursting && externalRotating)) ? "epe-icon-spinning" : ""} ${className}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={triggerBurst}
+        aria-label="EPE icon"
+      >
       <polygon className="epe-body" points={INNER_BODY} style={{ fill: "hsl(var(--primary))" }} />
       {TIPS.map((tip, i) => (
         <polygon
@@ -382,17 +409,8 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
 
         />
       ))}
-      {/* Slideshow overlay */}
-      <g
-        style={{
-          opacity: slideVisible ? 1 : 0,
-          transition: "opacity 0.3s ease",
-          pointerEvents: "none",
-        }}
-      >
-        {SLIDESHOW_ICONS[slideIdx]}
-      </g>
-    </svg>
+      </svg>
+    </div>
   );
 }
 
@@ -1040,6 +1058,19 @@ export default function Home() {
       }
     `;
     document.head.appendChild(style);
+
+    // Update favicon to match the color theme
+    const primaryHsl = `hsl(${theme.p})`;
+    const svgStr = makeFaviconSvg(primaryHsl);
+    const encoded = `data:image/svg+xml,${encodeURIComponent(svgStr)}`;
+    let faviconLink = document.querySelector<HTMLLinkElement>('link[rel~="icon"]');
+    if (!faviconLink) {
+      faviconLink = document.createElement("link");
+      faviconLink.rel = "icon";
+      faviconLink.type = "image/svg+xml";
+      document.head.appendChild(faviconLink);
+    }
+    faviconLink.href = encoded;
   }, [colorTheme]);
 
   useEffect(() => {
@@ -1177,8 +1208,8 @@ export default function Home() {
             const Icon = cat.icon;
             const isActive = state.activeCategory === cat.id;
             return (
+              <React.Fragment key={cat.id}>
               <Button
-                key={cat.id}
                 variant={isActive ? "secondary" : "ghost"}
                 size="sm"
                 className={`gap-2 shrink-0 ${isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
@@ -1197,6 +1228,17 @@ export default function Home() {
                 <Icon className="w-4 h-4" />
                 {cat.label}
               </Button>
+              {cat.id === "grounds" && (
+                <span
+                  aria-hidden
+                  data-help="Grounds e Borders — relacionados: brushes de ground definem quais borders (transições de borda) serão usados automaticamente em cada terrain"
+                  className="select-none pointer-events-none shrink-0 text-[10px] font-bold px-0.5"
+                  style={{ color: "hsl(var(--primary))", lineHeight: 1, opacity: 0.85 }}
+                >
+                  ↔
+                </span>
+              )}
+              </React.Fragment>
             );
           })}
         </nav>
