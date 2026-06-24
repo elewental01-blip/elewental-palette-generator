@@ -263,7 +263,7 @@ export function WallEditor() {
         </div>
       </div>
 
-      <TilesetRegistration brushName={activeItem.name || ""} />
+      <TilesetRegistration brushName={activeItem.name || ""} allBrushNames={state.walls.map((w) => w.name)} />
     </div>
   );
 }

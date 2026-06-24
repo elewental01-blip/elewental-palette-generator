@@ -512,11 +512,11 @@ export function DoodadEditor() {
   const updateField    = (field: keyof DoodadItem, value: any) => dispatch({ type: "UPDATE_DOODAD", id: activeItem.id, doodad: { ...activeItem, [field]: value } });
   const updateElements = (elements: DoodadElementType[]) => updateField("elements", elements);
 
-  const addElement = (type: "simple" | "composite" | "composite3d") => {
+  const addElement = (type: "simple" | "composite" | "composite3d", alternate = false) => {
     const n = [...activeItem.elements];
-    if (type === "simple")        n.push({ type: "simple", id: 0, chance: 10 });
-    else if (type === "composite") n.push({ type: "composite", chance: 10, tiles: [] });
-    else                           n.push({ type: "composite3d", chance: 10, tiles: [{ x: 0, y: 0, z: 0, itemId: 0 }] });
+    if (type === "simple")         n.push({ type: "simple", id: 0, chance: 10, ...(alternate && { alternate: true }) });
+    else if (type === "composite") n.push({ type: "composite", chance: 10, tiles: [], ...(alternate && { alternate: true }) });
+    else                           n.push({ type: "composite3d", chance: 10, tiles: [{ x: 0, y: 0, z: 0, itemId: 0 }], ...(alternate && { alternate: true }) });
     updateElements(n);
   };
 
@@ -580,10 +580,14 @@ export function DoodadEditor() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold" data-help="Elements — lista de elementos visuais que compõem este doodad (Simple, Composite ou Composite 3D)">Elements</h3>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button size="sm" variant="outline" className="text-primary border-primary/40 hover:bg-primary/10"
               onClick={() => addElement("simple")} data-testid="button-add-simple"
               data-help="+ Simple — adiciona um elemento simples com um único tile e chance de aparecimento">+ Simple</Button>
+            <Button size="sm" variant="outline" className="text-purple-400 border-purple-500/40 hover:bg-purple-500/10 gap-1"
+              onClick={() => addElement("simple", true)} data-testid="button-add-simple-alternate"
+              data-help="+ Simple (Alternate) — adiciona um elemento simples já com a opção Alternate ativada, equivalente a criar um Simple e ligar o alternate manualmente">
+              <Repeat2 className="w-3 h-3" /> + Simple</Button>
             <Button size="sm" variant="outline" className="text-primary border-primary/40 hover:bg-primary/10"
               onClick={() => addElement("composite")} data-testid="button-add-composite"
               data-help="+ Composite — adiciona um elemento composto por múltiplos tiles posicionados em grade X/Y">+ Composite</Button>
@@ -682,7 +686,7 @@ export function DoodadEditor() {
         </div>
       </div>
 
-      <TilesetRegistration brushName={activeItem.name} />
+      <TilesetRegistration brushName={activeItem.name} allBrushNames={state.doodads.map((d) => d.name)} />
     </div>
   );
 }

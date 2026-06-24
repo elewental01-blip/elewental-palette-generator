@@ -179,6 +179,9 @@ const HELP_EN: Record<string, string> = {
   "Novo Carpet — cria um carpet brush vazio para configurar tiles de tapete": "New Carpet — creates an empty carpet brush to configure carpet tiles",
   "Novo Item — cria um novo brush/item vazio na categoria ativa": "New Item — creates a new empty brush/item in the active category",
   "Expandir Sidebar — abre o painel lateral com a lista de brushes da categoria ativa": "Expand Sidebar — opens the side panel with the brush list for the active category",
+  "Novo Item (sidebar recolhida) — cria um novo brush na categoria ativa sem precisar expandir o painel lateral": "New Item (sidebar collapsed) — creates a new brush in the active category without expanding the side panel",
+  "Show All Brush Tags — lista consolidada com as tags de todos os brushes deste módulo. Atualizada automaticamente ao criar, renomear ou remover brushes. Facilita a cópia em lote para registrar todos os brushes no tileset de uma vez": "Show All Brush Tags — consolidated list of every brush tag in this module. Auto-updated when brushes are created, renamed, or removed. Makes batch-copying all brush registrations into a tileset easy.",
+  "+ Simple (Alternate) — adiciona um elemento simples já com a opção Alternate ativada, equivalente a criar um Simple e ligar o alternate manualmente": "+ Simple (Alternate) — adds a Simple element with Alternate pre-enabled, equivalent to creating a Simple and toggling alternate on manually",
   "Items — tiles que compõem este tipo de muro. Cada item tem ID e chance de aparecimento": "Items — tiles that make up this wall type. Each item has an ID and appearance chance",
   "Add Item — adiciona um tile para este tipo de muro com ID e chance": "Add Item — adds a tile for this wall type with an ID and chance value",
   "Doors — portas embutidas neste segmento de muro. Cada porta tem ID, tipo e estado (aberta/fechada)": "Doors — doors embedded in this wall segment. Each door has an ID, type, and state (open/closed)",
@@ -1326,6 +1329,12 @@ export default function Home() {
                   data-testid="button-expand-sidebar" title="Expand sidebar"
                   data-help="Expandir Sidebar — abre o painel lateral com a lista de brushes da categoria ativa">
                   <ChevronRight className="w-4 h-4" />
+                </button>
+                <button type="button" onClick={isDoodadTab ? handleCreateDoodad : handleCreate}
+                  className="w-8 h-8 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  data-testid="button-create-collapsed" title="New item"
+                  data-help="Novo Item (sidebar recolhida) — cria um novo brush na categoria ativa sem precisar expandir o painel lateral">
+                  <Plus className="w-4 h-4" />
                 </button>
                 {(isDoodadTab ? state.doodads.length + state.carpets.length : currentItems.length) > 0 && (
                   <span className="text-[10px] font-mono text-muted-foreground">

@@ -184,7 +184,7 @@ export function GroundEditor() {
         </div>
       </div>
 
-      <TilesetRegistration brushName={activeItem.name} />
+      <TilesetRegistration brushName={activeItem.name} allBrushNames={state.grounds.map((g) => g.name)} />
     </div>
   );
 }

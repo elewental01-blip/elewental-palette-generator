@@ -1,0 +1,203 @@
+1. Sidebar minimizada → criação de novos brushes
+
+
+
+- Quando o menu lateral esquerdo (<) estiver minimizado nos módulos:
+
+
+
+  - Grounds
+
+  - Borders
+
+  - Doodads
+
+  - Walls
+
+
+
+- O usuário deve continuar conseguindo criar novos brushes sem precisar expandir novamente a sidebar.
+
+
+
+- Ajuste necessário:
+
+  - manter visível um botão "+" para criação de novos brushes mesmo com a sidebar recolhida.
+
+
+
+- Regras:
+
+  - o botão deve permanecer acessível e intuitivo
+
+  - não deve exigir expansão da sidebar para uso
+
+  - deve abrir normalmente o fluxo de criação correspondente ao módulo atual
+
+
+
+- Objetivo:
+
+  - agilizar a criação de brushes
+
+  - reduzir cliques desnecessários durante o trabalho
+
+
+
+---
+
+
+
+2. Tileset Tags → exibição consolidada de todas as tags
+
+
+
+- Atualmente cada brush gera sua própria Tileset Tag individualmente.
+
+
+
+Exemplo:
+
+
+
+Brush 1:
+
+
+
+```xml
+
+<brush name="New Doodad 1"/>
+
+```
+
+
+
+Brush 2:
+
+
+
+```xml
+
+<brush name="New Doodad 2"/>
+
+```
+
+
+
+- Cada uma aparece separadamente em sua respectiva configuração.
+
+
+
+- Adicionar uma nova opção na área de Tileset Tags:
+
+
+
+  - Checkbox:
+
+    - Show All Brush Tags
+
+    - (ou nomenclatura equivalente)
+
+
+
+- Comportamento:
+
+
+
+  - Desmarcado:
+
+    - mantém o comportamento atual
+
+    - exibe apenas a tag do brush atual
+
+
+
+  - Marcado:
+
+    - exibe uma lista consolidada contendo as tags de todos os brushes criados naquele menu
+
+
+
+Exemplo:
+
+
+
+```xml
+
+<brush name="New Doodad 1"/>
+
+<brush name="New Doodad 2"/>
+
+<brush name="New Doodad 3"/>
+
+<brush name="New Doodad 4"/>
+
+```
+
+
+
+- A lista deve ser atualizada automaticamente conforme novos brushes forem criados, renomeados ou removidos.
+
+
+
+- Aplicar em todos os módulos que possuem geração de Tileset Tags.
+
+
+
+- Objetivo:
+
+  - facilitar a cópia em lote
+
+  - evitar copiar tags individualmente uma a uma
+
+  - acelerar o processo de registro de brushes em tilesets
+
+
+
+---
+
+
+
+3. Doodad Configuration → novo botão "+ Simple (Alternate)"
+
+
+
+- Na seção Elements de Doodad Configuration:
+
+
+
+- Adicionar um novo botão ao lado de:
+
+
+
+  - + Simple
+
+
+
+- Novo botão:
+
+
+
+  - + Simple (com o mesmo símbolo visual utilizado para Alternate ao lado)
+
+
+
+- Comportamento:
+
+
+
+  - Deve criar exatamente o mesmo tipo de elemento gerado por + Simple.
+
+
+
+  - A única diferença é que o elemento já nasce com a opção Alternate ativada.
+
+
+
+- Objetivo:
+
+  - reduzir cliques repetitivos
+
+  - acelerar a criação de elementos alternate
+
+  - manter consistência com o fluxo atual de criação de doodads

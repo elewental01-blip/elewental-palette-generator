@@ -363,7 +363,7 @@ export function CarpetEditor() {
         </div>
       </div>
 
-      <TilesetRegistration brushName={activeItem.name} />
+      <TilesetRegistration brushName={activeItem.name} allBrushNames={state.carpets.map((c) => c.name)} />
     </div>
   );
 }
