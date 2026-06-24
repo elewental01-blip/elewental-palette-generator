@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, ReactNode } from "react";
+import { createContext, useContext, useReducer, useEffect, useRef, ReactNode } from "react";
 import { BorderItem, GroundItem, DoodadItem, CarpetItem, WallItem, TilesetItem } from "./types";
+import { loadEditorState, saveEditorState } from "./storage";
 
 export type Category = "home" | "tilesets" | "grounds" | "borders" | "doodads" | "walls";
 
@@ -35,7 +36,8 @@ type Action =
   | { type: "ADD_TILESET"; tileset: TilesetItem }
   | { type: "UPDATE_TILESET"; id: string; tileset: TilesetItem }
   | { type: "DELETE_TILESET"; id: string }
-  | { type: "CLEAR_CATEGORY"; category: Category };
+  | { type: "CLEAR_CATEGORY"; category: Category }
+  | { type: "RESET_ALL" };
 
 const EMPTY_BORDER_ITEMS: BorderItem["items"] = {
   n: null, s: null, e: null, w: null,
@@ -53,6 +55,20 @@ const initialState: State = {
   activeCategory: "home",
   activeItemId: null,
 };
+
+function buildInitialState(): State {
+  const saved = loadEditorState();
+  if (!saved) return initialState;
+  return {
+    ...initialState,
+    borders:  saved.borders,
+    grounds:  saved.grounds,
+    doodads:  saved.doodads,
+    carpets:  saved.carpets,
+    walls:    saved.walls,
+    tilesets: saved.tilesets,
+  };
+}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -106,6 +122,9 @@ function reducer(state: State, action: Action): State {
     case "CLEAR_CATEGORY":
       return { ...state, [action.category]: [], activeItemId: null };
 
+    case "RESET_ALL":
+      return initialState;
+
     default:
       return state;
   }
@@ -117,8 +136,29 @@ const EditorContext = createContext<{
   emptyBorderItems: BorderItem["items"];
 } | null>(null);
 
+const SAVE_DEBOUNCE_MS = 400;
+
 export function EditorProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, undefined, buildInitialState);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveEditorState({
+        borders:  state.borders,
+        grounds:  state.grounds,
+        doodads:  state.doodads,
+        carpets:  state.carpets,
+        walls:    state.walls,
+        tilesets: state.tilesets,
+      });
+    }, SAVE_DEBOUNCE_MS);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [state.borders, state.grounds, state.doodads, state.carpets, state.walls, state.tilesets]);
+
   return (
     <EditorContext.Provider value={{ state, dispatch, emptyBorderItems: EMPTY_BORDER_ITEMS }}>
       {children}

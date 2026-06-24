@@ -17,6 +17,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { clearAllAppData, STORAGE_KEYS } from "@/lib/storage";
 
 // ── Auth ────────────────────────────────────────────────────────────────────────
 const ADMIN_USER = "admin";
@@ -182,6 +188,7 @@ const HELP_EN: Record<string, string> = {
   "Novo Item (sidebar recolhida) — cria um novo brush na categoria ativa sem precisar expandir o painel lateral": "New Item (sidebar collapsed) — creates a new brush in the active category without expanding the side panel",
   "Show All Brush Tags — lista consolidada com as tags de todos os brushes deste módulo. Atualizada automaticamente ao criar, renomear ou remover brushes. Facilita a cópia em lote para registrar todos os brushes no tileset de uma vez": "Show All Brush Tags — consolidated list of every brush tag in this module. Auto-updated when brushes are created, renamed, or removed. Makes batch-copying all brush registrations into a tileset easy.",
   "+ Simple (Alternate) — adiciona um elemento simples já com a opção Alternate ativada, equivalente a criar um Simple e ligar o alternate manualmente": "+ Simple (Alternate) — adds a Simple element with Alternate pre-enabled, equivalent to creating a Simple and toggling alternate on manually",
+  "Clear Local Data — apaga permanentemente todos os dados salvos localmente: brushes, configurações, temas e posts. O aplicativo volta ao estado de primeira execução. Esta ação não pode ser desfeita": "Clear Local Data — permanently deletes all locally saved data: brushes, settings, themes, and posts. The app returns to its first-run state. This action cannot be undone",
   "Items — tiles que compõem este tipo de muro. Cada item tem ID e chance de aparecimento": "Items — tiles that make up this wall type. Each item has an ID and appearance chance",
   "Add Item — adiciona um tile para este tipo de muro com ID e chance": "Add Item — adds a tile for this wall type with an ID and chance value",
   "Doors — portas embutidas neste segmento de muro. Cada porta tem ID, tipo e estado (aberta/fechada)": "Doors — doors embedded in this wall segment. Each door has an ID, type, and state (open/closed)",
@@ -467,7 +474,7 @@ function Toggle({ on }: { on: boolean }) {
 function StylesMenu({
   darkMode, onDarkMode, effectsEnabled, onEffects,
   colorTheme, onColorTheme, helpLang, onHelpLang,
-  isLoggedIn, onLogin, onLogout, onReset,
+  isLoggedIn, onLogin, onLogout, onReset, onClearData,
 }: {
   darkMode: boolean; onDarkMode: (v: boolean) => void;
   effectsEnabled: boolean; onEffects: (v: boolean) => void;
@@ -475,6 +482,7 @@ function StylesMenu({
   helpLang: HelpLang; onHelpLang: (v: HelpLang) => void;
   isLoggedIn: boolean; onLogin: (u: string, p: string) => boolean; onLogout: () => void;
   onReset: () => void;
+  onClearData: () => void;
 }) {
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState("");
@@ -550,8 +558,8 @@ function StylesMenu({
           </div>
         </div>
 
-        {/* ── Reset All Settings ── */}
-        <div className="mt-2 pt-2 border-t border-border/40">
+        {/* ── Reset All Settings + Clear Local Data ── */}
+        <div className="mt-2 pt-2 border-t border-border/40 space-y-0.5">
           <button type="button"
             onClick={onReset}
             className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-destructive/10 transition-colors text-sm text-muted-foreground hover:text-destructive"
@@ -559,6 +567,34 @@ function StylesMenu({
             <RotateCcw className="w-3.5 h-3.5 shrink-0" />
             Reset All Settings
           </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button type="button"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-destructive/10 transition-colors text-sm text-muted-foreground hover:text-destructive"
+                data-testid="button-clear-local-data"
+                data-help="Clear Local Data — apaga permanentemente todos os dados salvos localmente: brushes, configurações, temas e posts. O aplicativo volta ao estado de primeira execução. Esta ação não pode ser desfeita">
+                <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                Clear Local Data
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Apagar dados locais?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja apagar todos os dados salvos localmente? Todos os brushes, configurações e posts serão removidos. Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onClearData}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  data-testid="button-confirm-clear-data">
+                  Apagar tudo
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         {/* ── Auth section ── */}
@@ -930,7 +966,9 @@ export default function Home() {
   const [iconHovered, setIconHovered] = useState(false);
   const [iconTrigger, setIconTrigger] = useState(0);
   const [iconRotating, setIconRotating] = useState(false);
-  const [helpMode, setHelpMode] = useState(false);
+  const [helpMode, setHelpMode] = useState(() => {
+    try { return localStorage.getItem(STORAGE_KEYS.helpMode) === "true"; } catch { return false; }
+  });
   const [helpText, setHelpText] = useState<string | null>(null);
   const [helpPos, setHelpPos] = useState({ x: 0, y: 0 });
   const [colorTheme, setColorTheme] = useState(() => localStorage.getItem("epe-color-theme") || "yellow-light");
@@ -941,15 +979,24 @@ export default function Home() {
   const [landingKey, setLandingKey] = useState(0);
 
   const handleReset = () => {
-    localStorage.removeItem("epe-color-theme");
-    localStorage.removeItem("epe-effects");
-    localStorage.removeItem("epe-help-lang");
-    localStorage.removeItem("rme-theme");
-    localStorage.removeItem("epe-blog-posts");
+    Object.values(STORAGE_KEYS).forEach((key) => { try { localStorage.removeItem(key); } catch {} });
+    dispatch({ type: "RESET_ALL" });
     setColorTheme("yellow-light");
     setEffectsEnabled(true);
     setDarkMode(false);
     setHelpLang("en");
+    setHelpMode(false);
+    setLandingKey((k) => k + 1);
+  };
+
+  const handleClearData = () => {
+    clearAllAppData();
+    dispatch({ type: "RESET_ALL" });
+    setColorTheme("yellow-light");
+    setEffectsEnabled(true);
+    setDarkMode(false);
+    setHelpLang("en");
+    setHelpMode(false);
     setLandingKey((k) => k + 1);
   };
 
@@ -980,6 +1027,10 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("epe-help-lang", helpLang);
   }, [helpLang]);
+
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEYS.helpMode, String(helpMode)); } catch {}
+  }, [helpMode]);
 
   useEffect(() => {
     const theme = COLOR_THEMES.find((t) => t.id === colorTheme);
@@ -1227,7 +1278,7 @@ export default function Home() {
           colorTheme={colorTheme} onColorTheme={setColorTheme}
           helpLang={helpLang} onHelpLang={setHelpLang}
           isLoggedIn={isLoggedIn} onLogin={handleLogin} onLogout={handleLogout}
-          onReset={handleReset}
+          onReset={handleReset} onClearData={handleClearData}
         />
       </header>
 
