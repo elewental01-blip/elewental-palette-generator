@@ -44,7 +44,12 @@ const DEFAULT_POSTS: BlogPost[] = [
     title: "Guia Completo — EPE",
     order: 0,
     html: `<h2 style="font-size:1.5rem;font-weight:700;margin-bottom:0.75rem">Guia Completo — Elewental Palette Editor</h2>
-<p style="margin-bottom:1rem">O <strong>Elewental Palette Editor (EPE)</strong> é um editor visual de paletas XML para o <strong>Remere's Map Editor (RME)</strong>. Crie e edite configurações de grounds, borders, doodads, walls, carpets e tilesets — e exporte como XML válido para o RME.</p>
+
+<h3 style="font-size:1.15rem;font-weight:700;margin:0.75rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🗺 Sobre o EPE</h3>
+<p style="margin-bottom:0.75rem">O <strong>Elewental Palette Editor (EPE)</strong> é uma ferramenta visual de criação e edição de assets para mapas do <strong>Remere's Map Editor (RME)</strong> — o editor de mapas open-source mais utilizado para jogos baseados no protocolo OpenTibia.</p>
+<p style="margin-bottom:0.75rem">O EPE foi criado para simplificar e acelerar o processo de configuração de paletas XML, eliminando a necessidade de editar arquivos de texto manualmente. Com uma interface visual e interativa, você monta estruturas complexas de brushes com validação em tempo real e exporta o XML pronto para uso no RME.</p>
+<p style="margin-bottom:0.75rem">Compatível com o <strong>RME v3.7 oficial</strong> e potencialmente com forks não oficiais que adotem o mesmo formato de paleta XML. Funciona inteiramente no navegador, sem necessidade de instalação.</p>
+<p style="margin-bottom:0">Repositório oficial do RME: <a href="https://github.com/hampusborgos/rme" style="color:hsl(var(--primary));text-decoration:underline;word-break:break-all">https://github.com/hampusborgos/rme</a></p>
 
 <h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🗃 Tilesets</h3>
 <p style="margin-bottom:0.5rem">Agrupa brushes em seções para exibição na paleta do RME.</p>
@@ -115,11 +120,7 @@ const DEFAULT_POSTS: BlogPost[] = [
 
 <h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">📋 XML Output</h3>
 <p>O painel de <strong>XML Output</strong> atualiza em tempo real conforme você preenche os campos de cada editor. Use o botão <strong>Copy</strong> para copiar o XML para a área de transferência, ou <strong>Download</strong> para salvar como arquivo <code>.xml</code>. A cor do texto XML segue o Color Theme selecionado.</p>
-
-<h3 style="font-size:1.15rem;font-weight:700;margin:1.25rem 0 0.5rem;border-bottom:1px solid rgba(128,128,128,0.25);padding-bottom:0.35rem">🗺 Sobre o EPE</h3>
-<p style="margin-bottom:0.75rem">O <strong>Elewental Palette Editor</strong> é uma ferramenta de criação e edição de assets para mapas do <strong>Remere's Map Editor (RME)</strong> — o editor de mapas de código aberto mais utilizado para jogos baseados no protocolo OpenTibia.</p>
-<p style="margin-bottom:0.75rem">O EPE foi criado para simplificar e acelerar o processo de configuração de paletas XML, eliminando a necessidade de editar arquivos de texto manualmente. Com uma interface visual e interativa, você pode montar estruturas complexas de brushes — com validação em tempo real — e exportar o XML pronto para uso no RME.</p>
-<p style="margin-bottom:0">Compatível com o <strong>RME v3.7 oficial</strong> e potencialmente com forks não oficiais que adotem o mesmo formato de paleta XML. O editor funciona inteiramente no navegador, sem necessidade de instalação ou conexão com servidor.</p>`,
+`,
   },
 ];
 
@@ -229,11 +230,12 @@ const TIPS = [
 ];
 const INNER_BODY = "18.61,6.24 23.14,8.86 25.76,13.39 25.76,18.61 23.14,23.14 18.61,25.76 13.39,25.76 8.86,23.14 6.24,18.61 6.24,13.39 8.86,8.86 13.39,6.24";
 
-function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = "", externalTrigger }: {
+function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = "", externalTrigger, externalRotating = false }: {
   size?: number;
   effectsEnabled?: boolean;
   className?: string;
   externalTrigger?: number;
+  externalRotating?: boolean;
 }) {
   const [burstId, setBurstId] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -279,7 +281,7 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
       width={size}
       height={size}
       style={{ display: "block", flexShrink: 0, cursor: effectsEnabled ? "pointer" : "default", overflow: "visible" }}
-      className={`${isBursting ? "epe-icon-animating" : ""} ${isSpinning ? "epe-icon-spinning" : ""} ${className}`}
+      className={`${isBursting ? "epe-icon-animating" : ""} ${(isSpinning || (!isBursting && externalRotating)) ? "epe-icon-spinning" : ""} ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={triggerBurst}
@@ -833,6 +835,7 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(loadAuth);
   const [iconHovered, setIconHovered] = useState(false);
   const [iconTrigger, setIconTrigger] = useState(0);
+  const [iconRotating, setIconRotating] = useState(false);
   const [helpMode, setHelpMode] = useState(false);
   const [helpText, setHelpText] = useState<string | null>(null);
   const [helpPos, setHelpPos] = useState({ x: 0, y: 0 });
@@ -1042,11 +1045,12 @@ export default function Home() {
               onMouseEnter={() => setIconHovered(true)}
               onMouseLeave={() => setIconHovered(false)}
             >
-              <AnimatedDodecagramIcon size={28} effectsEnabled={effectsEnabled} externalTrigger={iconTrigger} />
+              <AnimatedDodecagramIcon size={28} effectsEnabled={effectsEnabled} externalTrigger={iconTrigger} externalRotating={iconRotating} />
             </div>
             <div
               className="flex items-center overflow-hidden"
-              onMouseEnter={() => setIconTrigger((t) => t + 1)}
+              onMouseEnter={() => { setIconTrigger((t) => t + 1); setIconRotating(true); }}
+              onMouseLeave={() => setIconRotating(false)}
             >
               <span className="font-bold text-sm tracking-tight">EPE</span>
               <span className={[
