@@ -12,6 +12,7 @@ import {
   Layers, Image as ImageIcon, Box, BrickWall, Database, Home as HomeIcon,
   Plus, Trash2, ChevronLeft, ChevronRight, Moon, Sun, Sparkles, Settings2,
   ChevronUp, ChevronDown, Edit3, Eye, FileText, Lock, LogOut, Search, RotateCcw, Info,
+  TreePine, Footprints, Signpost, Map as MapIcon,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -215,64 +216,20 @@ const HELP_EN: Record<string, string> = {
 
 // ── Slideshow icons for AnimatedDodecagramIcon hover ─────────────────────────
 
-// Icon set: tree, wall, door, trail, map, flower, stone, cloud
-// Rendered outside the rotating SVG — they stay upright during spin
-const SLIDESHOW_ICONS: React.ReactNode[] = [
-  // tree
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <polygon points="16,9 11.5,16.5 20.5,16.5" />
-    <polygon points="16,12 12.5,18 19.5,18" style={{ opacity: 0.6 }} />
-    <rect x="14.5" y="16.5" width="3" height="4" rx="0.5" />
-  </g>,
-  // wall (brick)
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <rect x="11" y="12" width="4.5" height="2.2" rx="0.4"/>
-    <rect x="16.5" y="12" width="4.5" height="2.2" rx="0.4"/>
-    <rect x="11" y="15" width="2.5" height="2.2" rx="0.4"/>
-    <rect x="14.5" y="15" width="4" height="2.2" rx="0.4"/>
-    <rect x="19.5" y="15" width="1.5" height="2.2" rx="0.4"/>
-    <rect x="11" y="18" width="4.5" height="2.2" rx="0.4"/>
-    <rect x="16.5" y="18" width="4.5" height="2.2" rx="0.4"/>
-  </g>,
-  // door
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <path d="M13 22 L13 15.5 A3 3 0 0 1 19 15.5 L19 22 Z" />
-    <circle cx="17.7" cy="18.5" r="0.9" style={{ fill: "hsl(var(--background))" }} />
-  </g>,
-  // trail (winding path)
-  <g style={{ fill: "none", stroke: "hsl(var(--foreground))", strokeWidth: 2.2, strokeLinecap: "round" }}>
-    <path d="M14 22 C11 19 18 17 17 14 C16 11 13 10 15 8" />
-  </g>,
-  // map (folded paper)
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <rect x="10" y="11" width="12" height="10" rx="0.5"/>
-    <line x1="14.5" y1="11" x2="14.5" y2="21" stroke="hsl(var(--background))" strokeWidth="0.9"/>
-    <line x1="18.5" y1="11" x2="18.5" y2="21" stroke="hsl(var(--background))" strokeWidth="0.9"/>
-    <line x1="10" y1="15" x2="22" y2="15" stroke="hsl(var(--background))" strokeWidth="0.9"/>
-    <line x1="10" y1="18" x2="22" y2="18" stroke="hsl(var(--background))" strokeWidth="0.9"/>
-  </g>,
-  // flower
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <circle cx="16" cy="16" r="2.5" />
-    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" />
-    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(60, 16, 16)" />
-    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(120, 16, 16)" />
-    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(180, 16, 16)" />
-    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(240, 16, 16)" />
-    <ellipse cx="16" cy="11" rx="1.8" ry="2.5" transform="rotate(300, 16, 16)" />
-  </g>,
-  // stone
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <ellipse cx="16.5" cy="18.5" rx="5.5" ry="3.8" />
-    <ellipse cx="12.5" cy="15.5" rx="3" ry="2.2" />
-  </g>,
-  // cloud
-  <g style={{ fill: "hsl(var(--foreground))" }}>
-    <circle cx="14" cy="18.5" r="3.2" />
-    <circle cx="18.5" cy="17" r="3.8" />
-    <circle cx="22.5" cy="19.5" r="2.5" />
-    <rect x="11" y="18.5" width="14" height="3.5" />
-  </g>,
+// Slideshow uses the same Lucide icons as the nav menus (minus Home) + extras
+// Rendered as React components outside the rotating SVG — they stay upright during spin
+type SlideIcon = React.ComponentType<{ size?: number; style?: React.CSSProperties; strokeWidth?: number }>;
+
+const SLIDESHOW_ICONS: SlideIcon[] = [
+  Database,    // Tilesets
+  Layers,      // Grounds
+  Box,         // Borders
+  ImageIcon,   // Doodads
+  BrickWall,   // Walls
+  TreePine,    // árvore
+  Footprints,  // pegadas
+  Signpost,    // placa
+  MapIcon,     // mapa
 ];
 
 // ── Animated Dodecagram Icon ───────────────────────────────────────────────────
@@ -373,21 +330,28 @@ function AnimatedDodecagramIcon({ size = 32, effectsEnabled = true, className = 
   return (
     <div style={{ position: "relative", width: size, height: size, display: "inline-block", flexShrink: 0 }}>
       {/* Slideshow overlay — outside the rotating SVG so icons stay upright */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          opacity: slideVisible ? 1 : 0,
-          transition: "opacity 0.3s ease",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      >
-        <svg viewBox="0 0 32 32" width={size} height={size}>
-          {SLIDESHOW_ICONS[slideIdx]}
-        </svg>
-      </div>
+      {(() => { const SlideIconComp = SLIDESHOW_ICONS[slideIdx]; return (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: slideVisible ? 1 : 0,
+            transition: "opacity 0.3s ease",
+            pointerEvents: "none",
+            zIndex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <SlideIconComp
+            size={Math.round(size * 0.52)}
+            strokeWidth={1.8}
+            style={{ color: "hsl(var(--foreground))" }}
+          />
+        </div>
+      ); })()}
       <svg
         viewBox="0 0 32 32"
         width={size}
@@ -1189,13 +1153,13 @@ export default function Home() {
             </div>
             <div
               className="flex items-center overflow-hidden"
-              onMouseEnter={() => { setIconTrigger((t) => t + 1); setIconRotating(true); }}
-              onMouseLeave={() => setIconRotating(false)}
+              onMouseEnter={() => { setIconTrigger((t) => t + 1); setIconRotating(true); setIconHovered(true); }}
+              onMouseLeave={() => { setIconRotating(false); setIconHovered(false); }}
             >
               <span className="font-bold text-base tracking-tight">EPE</span>
               <span className={[
                 "text-base font-medium overflow-hidden whitespace-nowrap transition-all duration-300 ease-out text-muted-foreground",
-                iconHovered ? "max-w-[180px] opacity-100" : "max-w-0 opacity-0",
+                iconHovered ? "max-w-[260px] opacity-100" : "max-w-0 opacity-0",
               ].join(" ")}>
                 &nbsp;— Elewental Palette Editor
               </span>
