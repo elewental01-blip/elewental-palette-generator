@@ -124,10 +124,16 @@ function DirectionCell({ dir, label, value, onUpdate }: {
           <form className="flex items-center gap-0 w-full" onSubmit={handleSubmit}>
             <Input
               ref={inputRef}
-              type="number"
+              type="text"
+              inputMode="numeric"
               placeholder="ID..."
               value={inputVal}
-              onChange={(e) => setInputVal(e.target.value)}
+              onKeyDown={(e) => {
+                if (!/^\d$/.test(e.key) && !["Backspace","Delete","ArrowLeft","ArrowRight","Tab","Enter"].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => setInputVal(e.target.value.replace(/\D/g, ""))}
               onBlur={commit}
               className="h-6 text-[11px] px-1.5 rounded-r-none border-r-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0"
               data-testid={`input-direction-${dir}`}
