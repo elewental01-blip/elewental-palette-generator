@@ -12,8 +12,8 @@ function BorderIcon({ dir }: { dir: BorderDirection }) {
   const g = "hsl(215 20% 30%)";
   const a = "hsl(var(--primary))";
   const icons: Record<BorderDirection, React.ReactNode> = {
-    n: (<><rect width="24" height="17" fill={g} /><rect y="17" width="24" height="7" fill={a} /></>),
-    s: (<><rect width="24" height="7" fill={a} /><rect y="7" width="24" height="17" fill={g} /></>),
+    n: (<><rect width="24" height="7" fill={a} /><rect y="7" width="24" height="17" fill={g} /></>),
+    s: (<><rect width="24" height="17" fill={g} /><rect y="17" width="24" height="7" fill={a} /></>),
     e: (<><rect width="17" height="24" fill={g} /><rect x="17" width="7" height="24" fill={a} /></>),
     w: (<><rect width="7" height="24" fill={a} /><rect x="7" width="17" height="24" fill={g} /></>),
     cnw: (<><rect width="24" height="24" fill={g} /><rect x="0" y="0" width="9" height="9" fill={a} /></>),
